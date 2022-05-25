@@ -42,3 +42,16 @@ toggleIsOncall() {
     IS_ONCALL := !IS_ONCALL
     Return
 }
+
+Gui, New,, Easy Radiology
+Gui, Add, Tab3, W500 H800, Auto Sign-In|Dictation|Keyboard|Imaging Launcher
+Gui, Add, Text,, Inteleviewer Username:
+Gui, Add, Edit, r1 vIVUsername
+Gui, Add, Text,, Inteleviewer Password:
+Gui, Add, Edit, r1 vIVPassword Password
+Gui, Add, Text,, Comrad Username:
+Gui, Add, Edit, r1 vComradUsername
+Gui, Add, Text,, Comrad Password:
+Gui, Add, Edit, r1 vComradPassword Password
+Gui, Add, Button, Default w80, Launch!
+;Gui, Show
