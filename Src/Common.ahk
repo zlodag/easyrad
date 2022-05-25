@@ -209,7 +209,7 @@ ActivateFirefox() {
   WinActivate, ahk_exe firefox.exe
 }
 
-GetIVUsername() {
+GetIVUsernameViaWindowTitle() {
   ;; Deprecated
   static username := ""
   if not username {
@@ -220,12 +220,12 @@ GetIVUsername() {
   return username
 }
 
-GetIVSessionKey() {
+GetIVSessionKeyViaHCS() {
   ;; Deprecated
   static SessionKey := ""
   if not SessionKey {
     whr := ComObjCreate("WinHttp.WinHttpRequest.5.1")
-    url := Format("https://app-cisintv-p.healthhub.health.nz/?method=view&userid={}&debug=0&nhi=0&accno=0", GetIVUsername())
+    url := Format("https://app-cisintv-p.healthhub.health.nz/?method=view&userid={}&debug=0&nhi=0&accno=0", GetIVUsernameViaWindowTitle())
     whr.Open("GET", url, true)
     whr.Send()
     whr.WaitForResponse()
@@ -245,10 +245,12 @@ GetIVUsernameAndSessionId() {
     return match
     MsgBox % baseUrl username sessionId
   }
+  ; A second session can be retrieved via reverse direction search
+  ; 
 }
 
 CreateIVComObj() {
-  static oviewer := ComObjCreate("InteleViewerServer.InteleViewerContro.1")
+  oviewer := ComObjCreate("InteleViewerServer.InteleViewerContro.1")
   match := GetIVUsernameAndSessionId()
   baseUrl := match.Value(1)
   username := match.Value(2)
@@ -257,6 +259,7 @@ CreateIVComObj() {
   oViewer.username := username
   oViewer.waitForLaunch := 1
   oViewer.sessionId := sessionId
+  ;oViewer.sessionId := "c3488773c75b0c219ce374193d2b6a76"
   return oViewer
 }
 
