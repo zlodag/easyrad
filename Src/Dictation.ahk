@@ -1,9 +1,3 @@
-; PowerMic Buttons for PowerScribe 360
-; by Tubo Shi MBBS
-
-; AHK Version 1.1
-; uses AHKHID from https://github.com/jleb/AHKHID
-
 DictaphoneExec:
     Gui +hwndhwnd ; stores window handle in hwnd
     ; Usage Page 1, Usage 0
@@ -48,11 +42,11 @@ powermicMap(data) {
         }
     case 0x80: ; Left custom button
         if WinActiveViewer() {
-            Send d            
+            Send d 
         } else if WinActive(POWERSCRIBE) {
             ToggleFindingsMode()
         }
-        
+
     case 0x200: ; Right custom button
         static toggle := True
         if WinActiveViewer() {
@@ -67,13 +61,13 @@ powermicMap(data) {
             ToolTip, '%content%' copied
             SetTimer, RemoveToolTip, -1000
             toggle := !toggle
-        }        
+        } 
 
     case 0x2000: ; Trigger button
         ActivatePowerScribe()
         Send {F12}
     Default: Return
-    }
+}
 }
 
 InputMsg(wParam, lParam) {
