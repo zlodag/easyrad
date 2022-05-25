@@ -21,7 +21,7 @@ Return
   MsgBox % Clipboard
 F1::
   Send ^c
-  Sleep, 500
+  ClipWait, 1
   if RegExMatch(Clipboard, "[A-Z]{2}-[0-9]{8}-[A-Z]{2}")
     OpenImageViaAccession(Clipboard)
   else if RegExMatch(Clipboard, "[A-Z]{3}[0-9]{4}")
@@ -242,14 +242,15 @@ k::ControlSend, {Up}, GetEditorFormClassNN("RichEdit20W")
 ;; =======================================
 
 #IfWinActive COMRAD
+Return
 
-  #IfWinActive ahk_exe emacs.exe
-    ~F1::
-      Sleep, 500
-      if RegExMatch(Clipboard, "[A-Z]{2}-[0-9]{8}-[A-Z]{2}")
-        OpenImageViaAccession(Clipboard)
-      else if RegExMatch(Clipboard, "[A-Z]{3}[0-9]{4}")
-        OpenImageViaNHI(Clipboard)
-    Return
+#IfWinActive ahk_exe emacs.exe
+~F1::
+  Sleep, 500
+  if RegExMatch(Clipboard, "[A-Z]{2}-[0-9]{8}-[A-Z]{2}")
+    OpenImageViaAccession(Clipboard)
+  else if RegExMatch(Clipboard, "[A-Z]{3}[0-9]{4}")
+    OpenImageViaNHI(Clipboard)
+Return
 
-    #If
+#If
