@@ -1,0 +1,135 @@
+;; ==================
+;; Global keybindings
+;; ==================
+
+F13::
+NumpadDiv:: 
+  ;; Boss key
+  ActivateComrad()
+  GroupActivate, RadiologyGroup
+  GroupActivate, RadiologyGroup
+  GroupActivate, RadiologyGroup
+Return
+
+`::
+  toggleInfoWindow() 
+Return
+
+;; ===============================================
+;; Hotkeys for when in InterleView or PowerScribe
+;; ===============================================
+#IfWinActive ahk_group RadiologyGroup 
+
+ESC::
+CapsLock::
+  ;; Start recording
+  ActivatePowerScribe()
+  ControlSend, Speech, {F4}, %POWERSCRIBE%
+Return
+
+^ESC::
+^CapsLock::
+  ToggleFindingsMode()
+Return
+
+NumpadDot::
+NumpadDel::
+  ;; Show report
+  WinActivate, ahk_group RadiologyGroup
+  Send v
+Return
+
+Tab::
+  ;; next fields
+  control := GetPowerScribeEditorCtrl()
+  ActivatePowerScribe()
+  ControlSend, %control%, {Tab}, %POWERSCRIBE%
+Return
+
+;; prev fields
++Tab::
+  control := GetPowerScribeEditorCtrl()
+  ActivatePowerScribe()
+  ControlSend, %control%, {Blind}{Alt Up}{Shift Down}{Tab}, %POWERSCRIBE%
+Return
+
+;; ====================================
+;; Powerscribe
+;; ====================================
+#If WinActive(POWERSCRIBE)
+
+#c::
+  change_consultant()
+  { 
+    Send {LAlt Down}ta{LAlt Up}
+  }
+Return
+
+#d::
+  check_revisions()
+  { 
+    Send {LAlt Down}ti{LAlt Up}
+    Sleep, 200
+    Send {Tab}
+  }
+Return
+
+;; Copy NHI
+F1::
+  WinGetText, visibleText, %POWERSCRIBE%
+  RegExMatch(visibleText, "[A-Z]{3}[0-9]{4}", NHI)
+  Clipboard := NHI
+Return
+
+;; Copy Accession Number
+F2::
+  WinGetText, visibleText, %POWERSCRIBE%
+  RegExMatch(visibleText, "[A-Z]{2}-[0-9]{8}-[A-Z]{2}", AccessionNumber)
+  Clipboard := AccessionNumber
+Return
+
+;; Open 
+F6::
+  WinGetText, visibleText, %POWERSCRIBE%
+  RegExMatch(visibleText, "[A-Z]{3}[0-9]{4}", NHI)
+  RegExMatch(visibleText, "[A-Z]{2}-[0-9]{8}-[A-Z]{2}", AccessionNumber)
+  OpenImageLink(NHI, AcessionNumber)
+Return
+
+;; =======================================
+;; Hotkeys for when in Comparing Revisions
+;; =======================================
+#IfWinActive Compare Report Revisions
+
+F1::
+  WinGetText, visibleText
+  RegExMatch(visibleText, "[A-Z]{3}[0-9]{4}", NHI)
+  Clipboard := NHI
+Return
+
+F2::
+  WinGetText, visibleText
+  RegExMatch(visibleText, "[A-Z]{2}-[0-9]{8}-[A-Z]{2}", AccessionNumber)
+  Clipboard := AccessionNumber
+  StartNewSearch()
+Return
+
+Down::
+  Send {Enter}
+  Send {Down}
+  Sleep 500
+  check_revisions()
+Return
+
+Up::
+  Send {Enter}
+  Send {Up}
+  Sleep 500
+  check_revisions()
+Return
+
+b::ControlSend, {PgUp}, GetEditorFormClassNN("RichEdit20W")
+j::ControlSend, {Down}, GetEditorFormClassNN("RichEdit20W")
+k::ControlSend, {Up}, GetEditorFormClassNN("RichEdit20W")
+
+#If  ;; End IfWinActive
