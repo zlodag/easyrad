@@ -1,15 +1,16 @@
-DictaphoneExec:
+#Include, Lib\AHKHID.ahk
+
+DictaphoneInit: 
     Gui +hwndhwnd ; stores window handle in hwnd
     ; Usage Page 1, Usage 0
     ; RIDEV_PAGEONLY only devices with top level collection is usage page 1 (Powermic)
     AHKHID_Register(1, 0, hwnd, RIDEV_PAGEONLY + RIDEV_INPUTSINK) 
     ; Exclude other devices of similar usage page
     AHKHID_Register(1, 5, hwnd, RIDEV_EXCLUDE)
-
     OnMessage(0x00FF, "InputMsg") ; intercept WM_INPUT
 Return
 
-powermicMap(data) {
+PowermicMap(data) {
     switch data {
     case 0x4: ; Dictate button pressed, toggle dictation on
         ActivatePowerScribe()
@@ -21,13 +22,13 @@ powermicMap(data) {
         if WinActiveViewer() {
             Send {PgUp}
         } else if WinActive(POWERSCRIBE) {
-            Send {BackSpace}
+            Send ^z
         }
     case 0x20: ; Fast Forward button
         if WinActiveViewer() {
             Send {PgDn}
         } else if WinActive(POWERSCRIBE) {
-            OpenNewLine()
+            Send ^y
         }
     case 0x40: ; Play/Stop button
         ActivateViewer()
@@ -42,27 +43,19 @@ powermicMap(data) {
         }
     case 0x80: ; Left custom button
         if WinActiveViewer() {
-            Send d 
+            Send {Up}
         } else if WinActive(POWERSCRIBE) {
             ToggleFindingsMode()
         }
-
     case 0x200: ; Right custom button
-        static toggle := True
         if WinActiveViewer() {
-            Send {F1}
+            Send {Down}
         } else if WinActive(POWERSCRIBE) {
-            if toggle {
-                content := GetPowerScribeNHI()
-            } else {
-                content := GetPowerScribeAccession()
-            }
-            Clipboard := content
-            ToolTip, '%content%' copied
-            SetTimer, RemoveToolTip, -1000
-            toggle := !toggle
+            Acc := GetIVLastAccession()
+            Date := GetIVStudyDate(Acc)
+            SendInput, {Space}%Date%
+            TransientToolTip(Acc " : " Date)
         } 
-
     case 0x2000: ; Trigger button
         ActivatePowerScribe()
         Send {F12}
@@ -88,7 +81,7 @@ InputMsg(wParam, lParam) {
         if (vid = 1364) and (pid = 4097) and (uspg = 1) and (us = 0) { ; we have a PowerMic!
             r := AHKHID_GetInputData(lParam, uData)
             data := NumGet(uData,2, "Int")
-            powermicMap(data)
+            PowermicMap(data)
         }
     }
 }

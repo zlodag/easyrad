@@ -6,13 +6,9 @@ startEmacs() {
     if (WinExist("ahk_exe emacs.exe"))
         Return
 
-    EnvSet, HOME, "C:\Users\shitu\OneDrive - Canterbury District Health Board\home"
+    EnvSet, HOME, "C:\Users\shitu\OneDrive\home" 
     if Not AT_HOME {
-        EnvSet, http_proxy, "http://127.0.0.1:3128"
-        EnvSet, https_proxy, "http://127.0.0.1:3128"
-        EnvSet, MY_CYGWIN, H:/Documents\Cygwin
-        EnvSet, MY_LOCATION, work
-        Run, startemacs - Work.bat
+        Run, %A_WorkingDir%\..\Utils\startemacs - Work.bat
     } else {
         if WinExist("VPN Connect") {
             EnvSet, http_proxy, http://127.0.0.1:3128
@@ -60,6 +56,5 @@ startAnki() {
 startLogInBundle() {
     startComrad()
     startPacs()
-    startIE()
     startEmacs()
 }

@@ -9,13 +9,13 @@ SetTitleMatchMode, 2
 SetTitleMatchMode, Fast
 SetCapsLockState, AlwaysOff ; Disables CapsLock globally
 
-#Include, Lib\AHKHID.ahk
 #Include, Src\Common.ahk
 #Include, Src\Gui.ahk
-
-Gosub, DictaphoneExec
-Return ; End of auto-execution
-
 #Include, Src\Launchers.ahk
 #Include, Src\Dictation.ahk
-#Include, Src\keyboard_advance.ahk
+
+GoSub, DictaphoneInit
+Return ; End of auto-execution
+
+#Include, Src\keyboard_custom.ahk
+#Include, Src\ImageAnywhere.ahk

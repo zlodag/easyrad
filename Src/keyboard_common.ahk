@@ -22,9 +22,7 @@ Return
 
 ESC::
 CapsLock::
-  ;; Start recording
-  ActivatePowerScribe()
-  ControlSend, Speech, {F4}, %POWERSCRIBE%
+  ToggleRecording()
 Return
 
 ^ESC::
@@ -34,9 +32,7 @@ Return
 
 NumpadDot::
 NumpadDel::
-  ;; Show report
-  WinActivate, ahk_group RadiologyGroup
-  Send v
+  ShowIVReport()
 Return
 
 Tab::
@@ -72,28 +68,6 @@ Return
     Sleep, 200
     Send {Tab}
   }
-Return
-
-;; Copy NHI
-F1::
-  WinGetText, visibleText, %POWERSCRIBE%
-  RegExMatch(visibleText, "[A-Z]{3}[0-9]{4}", NHI)
-  Clipboard := NHI
-Return
-
-;; Copy Accession Number
-F2::
-  WinGetText, visibleText, %POWERSCRIBE%
-  RegExMatch(visibleText, "[A-Z]{2}-[0-9]{8}-[A-Z]{2}", AccessionNumber)
-  Clipboard := AccessionNumber
-Return
-
-;; Open 
-F6::
-  WinGetText, visibleText, %POWERSCRIBE%
-  RegExMatch(visibleText, "[A-Z]{3}[0-9]{4}", NHI)
-  RegExMatch(visibleText, "[A-Z]{2}-[0-9]{8}-[A-Z]{2}", AccessionNumber)
-  OpenImageLink(NHI, AcessionNumber)
 Return
 
 ;; =======================================
