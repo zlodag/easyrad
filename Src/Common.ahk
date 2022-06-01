@@ -1,3 +1,5 @@
+SetWorkingDir, %A_ScriptDir%
+
 ;; Constants
 global POWERSCRIBE := "PowerScribe 360 | Reporting"
 global INTELEVIEWER_SEARCH := "Search Tool"
@@ -6,6 +8,9 @@ global COMRAD := "COMRAD Medical Systems Ltd."
 global PS_EDITOR_CTRL := GetEditorFormClassNN("RICHEDIT50W")
 global PS_TOOLBAR_CTRL := GetFormatToolbarClassNN("151")
 global PS_ACCESSION := GetAccessionClassNN()
+
+global RE_NHI := "[A-Z]{3}[0-9]{4}[A-Z]{0,5}"
+global RE_ACC := "(?:(?:[A-Z]{2}-)?[0-9]+-[A-Z]{2,5})|(?:[0-9]{4}[A-Z]?[0-9]+[A-Z]+)"
 
 GroupAdd, RadiologyGroup, ahk_exe InteleViewer.exe
 GroupAdd, RadiologyGroup, %POWERSCRIBE%
@@ -76,13 +81,13 @@ ToggleRecording() {
 
 GetPowerScribeNHI() {
   WinGetText, visibleText, %POWERSCRIBE%
-  RegExMatch(visibleText, "[A-Z]{3}[0-9]{4}", NHI)
+  RegExMatch(visibleText, RE_NHI, NHI)
   Return NHI
 }
 
 GetPowerScribeAccession() {
   WinGetText, visibleText, %POWERSCRIBE%
-  RegExMatch(visibleText, "[A-Z]{2}-[0-9]{8}-[A-Z]{2}", AccessionNumber)
+  RegExMatch(visibleText, RE_ACC, AccessionNumber)
   Return AccessionNumber
 }
 
@@ -235,50 +240,141 @@ GetIVSessionKeyViaHCS() {
   return SessionKey
 }
 
-GetIVUsernameAndSessionId() {
+IVOpenLogFile() {
   EnvGet, A_LocalAppData, LocalAppData
   tmpFile := A_LocalAppData "\Temp\CViewer.log"
-  file := FileOpen(tmpFile, "r")
-  if file {
-    content := file.Read()
-    RegExMatch(content, "O)(http://.+)/InteleViewerService/InteleViewerService\?username=([A-Za-z0-9]+)&sessionId=([a-z0-9]{32})", match)
-    return match
-    MsgBox % baseUrl username sessionId
+  FileRead, Content, %tmpFile%
+  return Content
+}
+
+IVGetRelevantLog() {
+  log := IVOpenLogFile()
+  CurrentNHI := GetIVCurrentAccessionAndNHI().NHI
+  StudyStart := RegExMatch(log, CurrentNHI)
+  Content := SubStr(log, StudyStart)
+  return Content
+}
+
+GetIVLastAccession() {
+  content := IVGetRelevantLog()
+  RE_findUid := "sO).*Drag started for thumbnail dataset PersistentImageId \[mSeriesInstanceUid=([0-9.]+),"
+  RE_prior := "sO).*Loading matched prior study: Study \[[-A-Za-z]+ Acc (?P<ACC>" RE_ACC ")"
+  RegExMatch(content, RE_findUid, LastDragged)
+  RegExMatch(content, RE_prior, Previous)
+
+  if (LastDragged.Pos(1) > Previous.Pos(1)) {
+    Uid := LastDragged.Value(1)
+    RE_findAcc := "O)Acc \[(?P<ACC>" RE_ACC ")\], series UID \[" Uid "\],"
+    RegExMatch(content, RE_findAcc, match)
+    return match.ACC
+  } else {
+    return Previous.ACC
   }
-  ; A second session can be retrieved via reverse direction search
-  ; 
+}
+
+GetIVCurrentAccessionAndNHI() {
+  ;; Pretty much guarantees the current study NHI and Accession number, but not the earliest position.
+  content := IVOpenLogFile()
+  needle := "sO).*active order: DefaultOrderId\[PatId=(?P<NHI>" RE_NHI ") AccNum=(?P<ACC>" RE_ACC ")\]"
+  RegExMatch(content, needle, match)
+  return match
+}
+
+GetIVStudyDate(accessionNumber) {
+  nhi := GetIVCurrentAccessionAndNHI().NHI
+  priors := IVSearchStudiesByNHI(IVGetRelatedNHIForCurrentStudy())
+  needle := "O)" accessionNumber "\|(?P<Date>[0-9]{4}/[0-9]{2}/[0-9]{2})"
+  RegExMatch(priors, needle, match)
+  ;MsgBox % priors
+  ;MsgBox % "NHI: " nhi ", Acc: " accessionNumber " Date: " match.Date
+  Date := IVFormatDate(match.Date)
+  return Date
+}
+
+IVFormatDate(Date) {
+  if (not Date)
+    Return ""
+  Date := strReplace(Date, "/", "")
+  FormatTime, Date, %Date%, dd/MM/yyyy
+  return Date
+}
+
+IVSearchStudiesByNHI(nhi) {
+  whr := ComObjCreate("WinHttp.WinHttpRequest.5.1") 
+  match := GetIVUsernameAndSessionId()
+  baseUrl := match.baseUrl
+  username := match.username
+  sessionId := match.sid
+  url := baseUrl "/InteleBrowser/InteleBrowser.Search"
+
+  whr.Open("POST", url, true)
+  whr.SetRequestHeader("Content-type", "application/x-www-form-urlencoded")
+  whr.Send("UserName=" username "&SID=" sessionId "&sf0=" nhi "&comparator0=EQUALS&searchScope=internal&Action=appletsearch&searchProtocolVersion=4")
+  whr.WaitForResponse()
+  return whr.ResponseText
+}
+
+IVGetRelatedNHIForCurrentStudy() {
+  nhi := GetIVCurrentAccessionAndNHI().NHI
+  log := IVGetRelevantLog()
+  RegExMatch(log, "sO).*Build the task to search related series for \[(?P<NHIs>[A-Z0-9, ]+)\]", match)
+  result := StrReplace(match.NHIs, ", ", "%5C")
+  ;MsgBox % "IVGetRelatedNHI: NHI: " nhi ", result: " result
+  Return result
+}
+
+GetIVUsernameAndSessionId() {
+  content := IVOpenLogFile()
+  url := "(?P<baseUrl>http://.+)/InteleViewerService/InteleViewerService\"
+  RegExMatch(content, "O)" url "?username=(?P<username>[A-Za-z0-9]+)&sessionId=(?P<sid>[a-z0-9]{32})", match)
+  return match
 }
 
 CreateIVComObj() {
   oviewer := ComObjCreate("InteleViewerServer.InteleViewerContro.1")
   match := GetIVUsernameAndSessionId()
-  baseUrl := match.Value(1)
-  username := match.Value(2)
-  sessionId := match.Value(3)
-  oViewer.baseUrl := baseUrl
-  oViewer.username := username
+  oViewer.baseUrl := match.baseUrl
+  oViewer.username := match.username
   oViewer.waitForLaunch := 1
-  oViewer.sessionId := sessionId
-  ;oViewer.sessionId := "c3488773c75b0c219ce374193d2b6a76"
+  oViewer.sessionId := match.sid
+  ;oViewer.sessionId := "c3488773c75b0c219ce374193d2b6a76" ; test sessionKey
   return oViewer
 }
 
 OpenImageViaNHI(nhi) {
-  static iv
-  if not iv {
-    iv := CreateIVComObj()
-  }
+  static iv := CreateIVComObj()
   iv.loadOrder(0, nhi)
 }
 
 OpenImageViaAccession(accession) {
-  static iv 
-  if not iv {
-    iv := CreateIVComObj()
-  }
+  static iv := CreateIVComObj()
   iv.loadOrderByAccessionNum(accession)
 }
 
 RemoveToolTip() {
   ToolTip
+}
+
+TransientToolTip(text) {
+  ToolTip, %text%
+  SetTimer, RemoveToolTip, -1000
+}
+
+;; Emacs related
+EmacsCapture(key) {
+  ActivateEmacs()
+  Send ^cc%key%
+  sleep 1000
+  Send ^y{Enter}
+}
+
+EmacsCapturePowerScribe(key) {
+  EmacsCapture(key)
+  Sleep 1000
+  ActivatePowerScribe()
+  WinWaitActive, %POWERSCRIBE%
+  Send ^c
+  ClipWait, 1
+  ActivateEmacs()
+  Send +!.^y[^e
 }
