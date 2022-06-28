@@ -10,7 +10,7 @@ global PS_TOOLBAR_CTRL := GetFormatToolbarClassNN("151")
 global PS_ACCESSION := GetAccessionClassNN()
 
 global RE_NHI := "[A-Z]{3}[0-9]{4}[A-Z]{0,5}"
-global RE_ACC := "(?:(?:[A-Z]{2}-)?[0-9]+-[A-Z]{2,5})|(?:[0-9]{4}[A-Z]?[0-9]+[A-Z]+)"
+global RE_ACC := "(?:(?:[A-Z]{2}-)?[0-9]+-[A-Z]{2,5})|(?:[0-9]{4}[A-Z]+[0-9]+[-A-Z0-9]+)"
 
 GroupAdd, RadiologyGroup, ahk_exe InteleViewer.exe
 GroupAdd, RadiologyGroup, %POWERSCRIBE%
@@ -47,6 +47,10 @@ GetPowerScribeEditorCtrl() {
 
 GetPowerScribeToolbarCtrl() {
   Return GetFormatToolbarClassNN("151")
+}
+
+GetPowerScribeFindingsCtrl() {
+  Return GetEditorFormClassNN("RICHEDIT50W", "2")
 }
 
 OpenNewLine() {
@@ -93,6 +97,17 @@ GetPowerScribeAccession() {
 
 CopyTextArea() {
   Send ^a^c^+{Home}
+}
+
+PowerScribeMonitorFindings() {
+  findingsCtrl := GetPowerScribeFindingsCtrl()
+  ControlGetText, findings, %findingsCtrl%, %POWERSCRIBE%
+  if findings {    
+    File := FileOpen(A_Temp "\findings.txt", "w")
+    File.Write(findings)
+    File.Close()
+  }
+  MsgBox % findings
 }
 
 /* LogCaseFromPowerScribe__() {
@@ -170,6 +185,17 @@ toggleInfoWindow() {
   }
 }
 
+toggleEmacs() {
+  if WinActive(POWERSCRIBE) {
+    ActivateEmacs()()
+  }
+  else if WinActive("ahk_exe emacs.exe") {
+    ActivatePowerScribe()
+  }
+  else 
+    ActivatePowerScribe()
+}
+
 toggleLungWindow() { 
   static toggle := True
   if (toggle := !toggle)
@@ -240,23 +266,23 @@ GetIVSessionKeyViaHCS() {
   return SessionKey
 }
 
-IVOpenLogFile() {
+IVLogFile() {
   EnvGet, A_LocalAppData, LocalAppData
   tmpFile := A_LocalAppData "\Temp\CViewer.log"
   FileRead, Content, %tmpFile%
   return Content
 }
 
-IVGetRelevantLog() {
-  log := IVOpenLogFile()
-  CurrentNHI := GetIVCurrentAccessionAndNHI().NHI
+IVTrimmedLog() {
+  log := IVLogFile()
+  CurrentNHI := IVGetCurrentStudy().NHI
   StudyStart := RegExMatch(log, CurrentNHI)
   Content := SubStr(log, StudyStart)
   return Content
 }
 
-GetIVLastAccession() {
-  content := IVGetRelevantLog()
+IVGetLatestAccession() {
+  content := IVTrimmedLog()
   RE_findUid := "sO).*Drag started for thumbnail dataset PersistentImageId \[mSeriesInstanceUid=([0-9.]+),"
   RE_prior := "sO).*Loading matched prior study: Study \[[-A-Za-z]+ Acc (?P<ACC>" RE_ACC ")"
   RegExMatch(content, RE_findUid, LastDragged)
@@ -272,26 +298,25 @@ GetIVLastAccession() {
   }
 }
 
-GetIVCurrentAccessionAndNHI() {
+IVGetCurrentStudy() {
   ;; Pretty much guarantees the current study NHI and Accession number, but not the earliest position.
-  content := IVOpenLogFile()
-  needle := "sO).*active order: DefaultOrderId\[PatId=(?P<NHI>" RE_NHI ") AccNum=(?P<ACC>" RE_ACC ")\]"
+  content := IVLogFile()
+  needle := "sO).*DefaultOrderId\[PatId=(?P<NHI>" RE_NHI ") AccNum=(?P<ACC>" RE_ACC ")\]"
   RegExMatch(content, needle, match)
   return match
 }
 
-GetIVStudyDate(accessionNumber) {
-  nhi := GetIVCurrentAccessionAndNHI().NHI
-  priors := IVSearchStudiesByNHI(IVGetRelatedNHIForCurrentStudy())
+IVGetStudyDate(accessionNumber) {
+  priors := IVGetPriorStudies(IVBuildRelatedNHIQueryString())
   needle := "O)" accessionNumber "\|(?P<Date>[0-9]{4}/[0-9]{2}/[0-9]{2})"
   RegExMatch(priors, needle, match)
   ;MsgBox % priors
-  ;MsgBox % "NHI: " nhi ", Acc: " accessionNumber " Date: " match.Date
-  Date := IVFormatDate(match.Date)
+  ;MsgBox % "Acc: " accessionNumber " Date: " match.Date
+  Date := FormatIVDate(match.Date)
   return Date
 }
 
-IVFormatDate(Date) {
+FormatIVDate(Date) {
   if (not Date)
     Return ""
   Date := strReplace(Date, "/", "")
@@ -299,9 +324,9 @@ IVFormatDate(Date) {
   return Date
 }
 
-IVSearchStudiesByNHI(nhi) {
+IVGetPriorStudies(nhi) {
   whr := ComObjCreate("WinHttp.WinHttpRequest.5.1") 
-  match := GetIVUsernameAndSessionId()
+  match := IVGetAuthConfig()
   baseUrl := match.baseUrl
   username := match.username
   sessionId := match.sid
@@ -314,25 +339,30 @@ IVSearchStudiesByNHI(nhi) {
   return whr.ResponseText
 }
 
-IVGetRelatedNHIForCurrentStudy() {
-  nhi := GetIVCurrentAccessionAndNHI().NHI
-  log := IVGetRelevantLog()
+IVBuildRelatedNHIQueryString() {
+  nhi := IVGetCurrentStudy().NHI
+  log := IVTrimmedLog()
   RegExMatch(log, "sO).*Build the task to search related series for \[(?P<NHIs>[A-Z0-9, ]+)\]", match)
   result := StrReplace(match.NHIs, ", ", "%5C")
-  ;MsgBox % "IVGetRelatedNHI: NHI: " nhi ", result: " result
-  Return result
+  If InStr(result, nhi)
+    Return result
+  else
+    Return nhi
+  
+  
 }
 
-GetIVUsernameAndSessionId() {
-  content := IVOpenLogFile()
+IVGetAuthConfig() {
+  ;; Returns earliest baseUrl, username, session ID
+  content := IVLogFile()
   url := "(?P<baseUrl>http://.+)/InteleViewerService/InteleViewerService\"
   RegExMatch(content, "O)" url "?username=(?P<username>[A-Za-z0-9]+)&sessionId=(?P<sid>[a-z0-9]{32})", match)
   return match
 }
 
-CreateIVComObj() {
+IVCreateComObj() {
   oviewer := ComObjCreate("InteleViewerServer.InteleViewerContro.1")
-  match := GetIVUsernameAndSessionId()
+  match := IVGetAuthConfig()
   oViewer.baseUrl := match.baseUrl
   oViewer.username := match.username
   oViewer.waitForLaunch := 1
@@ -342,12 +372,12 @@ CreateIVComObj() {
 }
 
 OpenImageViaNHI(nhi) {
-  static iv := CreateIVComObj()
+  static iv := IVCreateComObj()
   iv.loadOrder(0, nhi)
 }
 
 OpenImageViaAccession(accession) {
-  static iv := CreateIVComObj()
+  static iv := IVCreateComObj()
   iv.loadOrderByAccessionNum(accession)
 }
 
@@ -361,20 +391,26 @@ TransientToolTip(text) {
 }
 
 ;; Emacs related
-EmacsCapture(key) {
+EmacsCapture(key, id) {
   ActivateEmacs()
   Send ^cc%key%
   sleep 1000
-  Send ^y{Enter}
+  Send %id%{Enter}
 }
 
-EmacsCapturePowerScribe(key) {
-  EmacsCapture(key)
-  Sleep 1000
-  ActivatePowerScribe()
-  WinWaitActive, %POWERSCRIBE%
-  Send ^c
-  ClipWait, 1
-  ActivateEmacs()
+EmacsCapturePowerScribe(key, id, content) {
+  EmacsCapture(key, id)
+  Clipboard := content
   Send +!.^y[^e
+}
+
+EmacsGetFindings() {
+  findingsCtrl := GetPowerScribeFindingsCtrl()
+  Clipboard := ""
+  ControlGetText, Clipboard, %findingsCtrl%, %POWERSCRIBE%
+  ClipWait, 1
+  If Clipboard {
+    Send, ^y
+    ControlSetText, %findingsCtrl%,, %POWERSCRIBE%
+  }
 }

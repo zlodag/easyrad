@@ -1,11 +1,21 @@
 #Include, Src\Keyboard_common.ahk
 
 ;; ==================
+;; Timers
+;; ==================
+
+;; ==================
 ;; Global keybindings
 ;; ==================
 
 End::
-  IVGetRelatedNHIForCurrentStudy()
+  editCtrl := GetPowerScribeFindingsCtrl()
+  ControlGetText, text, %editCtrl%, %POWERSCRIBE%
+  MsgBox % text
+Return 
+
+`::
+  toggleEmacs()
 Return
 
 /*
@@ -58,18 +68,14 @@ NumpadAdd::PgDn
 
 ;; Capture Emacs case for on-call when study not coded by Techs
 ^+c::
-  match := GetIVCurrentAccessionAndNHI()
-  Clipboard := match.Value(1)
-  ClipWait, 1
-  EmacsCapture("c")
+  match := IVGetCurrentStudy()
+  EmacsCapture("c", match.ACC)
 Return
 
 ;; Capture Emacs case for follow ups or collecting
 ^+f:: 
-  match := GetIVCurrentAccessionAndNHI()
-  Clipboard := match.Value(1)
-  ClipWait, 1
-  EmacsCapture("f")
+  match := IVGetCurrentStudy()
+  EmacsCapture("f", match.ACC)
 Return
 
 ;; ======================================
@@ -99,15 +105,21 @@ Return
 
 ;; Log case
 ^+c::
-  Clipboard := GetPowerScribeAccession()
+  Send, ^c
   ClipWait, 1
-  EmacsCapturePowerScribe("c")
+  EmacsCapturePowerScribe("c", GetPowerScribeAccession(), Clipboard)
 Return
 
 ^+f::
-  Clipboard := GetPowerScribeAccession()
+  Send, ^c
   ClipWait, 1
-  EmacsCapturePowerScribe("f")
+  EmacsCapturePowerScribe("f", GetPowerScribeAccession(), Clipboard)
+Return
+
+^+r::
+  Send, ^c
+  ClipWait, 1
+  EmacsCapturePowerScribe("r", GetPowerScribeAccession(), Clipboard)
 Return
 
 ;; Search for relevant reports
@@ -128,11 +140,26 @@ Return
 ;; =======================================
 ;; Hotkeys for when in Comparing Revisions
 ;; =======================================
-#IfWinActive Compare Report Revisions
+#If WinActive("Compare Report Revisions")
 Return
 
 ;; =======================================
 ;; Hotkeys for COMRAD
 ;; =======================================
-#IfWinActive COMRAD
+#If WinActive("COMRAD")
 Return
+#If
+
+;; =======================================
+;; Hotkeys for Emacs
+;; =======================================
+#If WinActive("^ahk_exe emacs.exe")
+#y::
+EmacsGetFindings()
+Return
+
+CapsLock::
+  ToggleRecording()
+Return
+
+#If

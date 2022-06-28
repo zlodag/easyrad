@@ -11,10 +11,6 @@ NumpadDiv::
   GroupActivate, RadiologyGroup
 Return
 
-`::
-  toggleInfoWindow() 
-Return
-
 ;; ===============================================
 ;; Hotkeys for when in InterleView or PowerScribe
 ;; ===============================================
