@@ -13,10 +13,11 @@ SetCapsLockState, AlwaysOff ; Disables CapsLock globally
 #Include, Src\Common.ahk
 #Include, Src\Gui.ahk
 #Include, Src\Launchers.ahk
+#Include, Src\FindingsMode.ahk
 #Include, Src\Dictation.ahk
 
 GoSub, DictaphoneInit
 Return ; End of auto-execution
 
-#Include, Src\keyboard_custom.ahk
 #Include, Src\ImageAnywhere.ahk
+#Include, Src\keyboard_custom.ahk

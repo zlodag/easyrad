@@ -1,27 +1,14 @@
 F1::
-  oldClip := Clipboard
-  Clipboard := ""
-  Send ^c
-  ClipWait, 1
-
-  if RegExMatch(Clipboard, RE_ACC, match) {
-    TransientToolTip("Acc: " Clipboard)
-    OpenImageViaAccession(match)
-  }
-  else if RegExMatch(Clipboard, RE_NHI, match) {
-    TransientToolTip("NHI: " Clipboard)
-    OpenImageViaNHI(match)
-  }
-
-  Clipboard := oldClip
+  CopySelectionAndOpenImage()
 Return
 
 #If WinActive(POWERSCRIBE)
 
 F1::
+openImageAnywhere() {
   AccessionNumber := GetPowerScribeAccession()
-  OpenImageViaAccession(AccessionNumber)
-Return
+  OpenImage(AccessionNumber)
+}
 
 ;; Copy Accession Number
 F2::
@@ -75,14 +62,10 @@ Return
   TransientToolTip("Acc copied: " Clipboard)
 Return
 
-#IfWinActive ahk_exe emacs.exe
+#If WinActive("ahk_exe emacs.exe")
 
-~F1::
-  Sleep, 500
-  if RegExMatch(Clipboard, RE_ACC)
-    OpenImageViaAccession(Clipboard)
-  else if RegExMatch(Clipboard, RE_NHI)
-    OpenImageViaNHI(Clipboard)
+F1::
+  openStudyFromEmacs()
 Return
 
 #If

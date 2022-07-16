@@ -102,7 +102,7 @@ CopyTextArea() {
 PowerScribeMonitorFindings() {
   findingsCtrl := GetPowerScribeFindingsCtrl()
   ControlGetText, findings, %findingsCtrl%, %POWERSCRIBE%
-  if findings {    
+  if findings { 
     File := FileOpen(A_Temp "\findings.txt", "w")
     File.Write(findings)
     File.Close()
@@ -348,8 +348,6 @@ IVBuildRelatedNHIQueryString() {
     Return result
   else
     Return nhi
-  
-  
 }
 
 IVGetAuthConfig() {
@@ -361,7 +359,7 @@ IVGetAuthConfig() {
 }
 
 IVCreateComObj() {
-  oviewer := ComObjCreate("InteleViewerServer.InteleViewerContro.1")
+  oviewer := ComObjCreate("InteleViewerServer.InteleViewerControl")
   match := IVGetAuthConfig()
   oViewer.baseUrl := match.baseUrl
   oViewer.username := match.username
@@ -381,6 +379,27 @@ OpenImageViaAccession(accession) {
   iv.loadOrderByAccessionNum(accession)
 }
 
+OpenImage(id) {
+  id := Trim(id)
+  if RegExMatch(id, RE_ACC) {
+    TransientToolTip("Acc: " id)
+    OpenImageViaAccession(id)
+  }
+  else if RegExMatch(id, RE_NHI) {
+    TransientToolTip("NHI: " Clipboard)
+    OpenImageViaNHI(id) 
+  }
+}
+
+CopySelectionAndOpenImage() {
+  oldClip := Clipboard
+  Clipboard := ""
+  Send ^c
+  ClipWait, 1
+  OpenImage(Clipboard)
+  Clipboard := oldClip
+}
+
 RemoveToolTip() {
   ToolTip
 }
@@ -393,15 +412,17 @@ TransientToolTip(text) {
 ;; Emacs related
 EmacsCapture(key, id) {
   ActivateEmacs()
-  Send ^cc%key%
+  SendInput ^cc%key%
   sleep 1000
-  Send %id%{Enter}
+  SendInput %id%
+  sleep 500
+  Send {Enter}
 }
 
 EmacsCapturePowerScribe(key, id, content) {
   EmacsCapture(key, id)
   Clipboard := content
-  Send +!.^y[^e
+  SendInput +!.^y[^e
 }
 
 EmacsGetFindings() {
@@ -410,7 +431,20 @@ EmacsGetFindings() {
   ControlGetText, Clipboard, %findingsCtrl%, %POWERSCRIBE%
   ClipWait, 1
   If Clipboard {
-    Send, ^y
+    SendInput, ^y
     ControlSetText, %findingsCtrl%,, %POWERSCRIBE%
   }
+}
+
+openStudyFromEmacs() {
+  Clipboard := ""
+  Send, {F1}
+  ClipWait, 1
+  OpenImage(Clipboard)
+}
+
+; Not used for now, for selection autotext automatically in PowerScribe
+SelectListBoxField(ctrl, i) {
+  PostMessage, 513, 0, %i%, %ctrl%, %powerscribe%
+  PostMessage, 514, 0, %i%, %ctrl%, %powerscribe% 
 }

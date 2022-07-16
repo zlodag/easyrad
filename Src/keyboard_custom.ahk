@@ -9,13 +9,90 @@
 ;; ==================
 
 End::
-  editCtrl := GetPowerScribeFindingsCtrl()
-  ControlGetText, text, %editCtrl%, %POWERSCRIBE%
-  MsgBox % text
+  FileAppend, %ClipboardAll%, clip.xml
 Return 
 
 `::
   toggleEmacs()
+Return
+
+MButton::
+  stickyRightMouse() {
+    static switch := 0
+    ActivateViewer()
+    if switch {
+      send {MButton}
+      switch := 0
+    } else {
+      send {MButton Down}
+      switch := 1
+    }
+  }
+
+Tab::
+  Send {Tab}
+Return
+
+#UseHook, Off
+Tab & 1::
+  KeyWait, 1
+  CopySelectionAndOpenImage()
+Return
+#Usehook
+
+Tab & 2::
+  KeyWait, 2
+  Send {F2}
+Return
+
+Tab & 3::
+  KeyWait, 3 
+  Send {F3}
+Return
+
+Tab & 4::
+  KeyWait, 4
+  Send {F4}
+Return
+
+Tab & 5::
+  KeyWait, 5
+  Send {F5}
+Return
+
+Tab & 6::
+  KeyWait, 6
+  Send {F6}
+Return
+
+Tab & 7::
+  KeyWait, 7
+  Send {F7}
+Return
+
+Tab & 8::
+  KeyWait, 8
+  Send {F8}
+Return
+
+Tab & 9::
+  KeyWait, 9
+  Send {F9}
+Return
+
+Tab & 0::
+  KeyWait, 0
+  Send {F10}
+Return
+
+Tab & -::
+  KeyWait, -
+  Send {F11}
+Return
+
+Tab & =::
+  KeyWait, =
+  Send {F12}
 Return
 
 /*
@@ -28,13 +105,6 @@ Return
 ;; Hotkeys for when in InterleView or PowerScribe
 ;; ===============================================
 #IfWinActive ahk_group RadiologyGroup 
-
-[::
-  toggleInfoWindow()
-Return
-
-]::
-  ActivateFirefox()
 Return
 
 ;; ======================================
@@ -42,16 +112,18 @@ Return
 ;; ======================================
 #If WinActive("^ ahk_exe InteleViewer.exe")
 
-XButton1::
+/* WheelRight::
   ;; Drag and drop images with "Mouse back button"
   Send "d{LButton Down}"
-Return
+Return 
+*/
 
-XButton1 Up::
+/* WheelRight Up::
   Send "{LButton Up}"
   Sleep 250
   Send "z"
-Return
+Return 
+*/
 
 Numpad0::
 NumpadIns::
@@ -59,23 +131,59 @@ NumpadIns::
   Send ^{BackSpace}
 Return
 
-Space::
-  toggleLeftMouseZoom()
+XButton2::
+NumpadSub:: 
+  Send {PgUp}
 Return
 
-NumpadSub:: PgUp
-NumpadAdd::PgDn
+XButton1::
+NumpadAdd::
+  Send {PgDn}
+Return
 
-;; Capture Emacs case for on-call when study not coded by Techs
+XButton1 & WheelDown::
+XButton1 & WheelUp::
+  cycleIVWindow() {
+    static window := 0
+    if (A_ThisHotkey = "XButton1 & WheelDown") {
+      switch window {
+      case 0:
+        Send {F5}
+        window := 1
+      return
+    case 1:
+      Send {F7}
+      window := 0
+    return
+  }
+} else if (A_ThisHotkey = "XButton1 & WheelUp") {
+  Send {F2}
+  window := 0
+}
+}
+
+;; Call
 ^+c::
   match := IVGetCurrentStudy()
   EmacsCapture("c", match.ACC)
 Return
 
-;; Capture Emacs case for follow ups or collecting
+;; Follow ups
 ^+f:: 
   match := IVGetCurrentStudy()
   EmacsCapture("f", match.ACC)
+Return
+
+;; Log case
+^+l:: 
+  match := IVGetCurrentStudy()
+  EmacsCapture("l", match.ACC)
+Return
+
+;; Report
+^+r:: 
+  match := IVGetCurrentStudy()
+  EmacsCapture("r", match.ACC)
 Return
 
 ;; ======================================
@@ -122,6 +230,33 @@ Return
   EmacsCapturePowerScribe("r", GetPowerScribeAccession(), Clipboard)
 Return
 
+^i::
+  lines := SetPowerScribeFindings(AddNumbering(GetPowerScribeFindings()))
+  Input, n,,{Space}{Enter}
+  updated := PopLine(lines, n)
+  SetPowerScribeFindings(RemoveNumbering(updated.Lines))
+  Clipboard := updated.Selected
+  Send ^v
+Return
+
+^+i::
+  Clipboard := ExtractPowerScribeImpressions()
+  ClipWait, 1
+  Send, ^v
+Return
+
+!o::
+  EditorControl := GetPowerScribeEditorCtrl()
+  FindingsControl := GetPowerScribeFindingsCtrl()
+  ControlGetFocus, CurrentControl, %POWERSCRIBE%
+
+  if (CurrentControl == EditorControl) {
+    ControlFocus, %FindingsControl%, %POWERSCRIBE%
+  } else if (CurrentControl == FindingsControl) {
+    ControlFocus, %EditorControl%, %POWERSCRIBE%
+  }
+Return
+
 ;; Search for relevant reports
 F5::
   InputBox, needle, "Search Report", "What would you like to search?"
@@ -148,7 +283,6 @@ Return
 ;; =======================================
 #If WinActive("COMRAD")
 Return
-#If
 
 ;; =======================================
 ;; Hotkeys for Emacs
@@ -158,8 +292,21 @@ Return
 EmacsGetFindings()
 Return
 
+#w::
+  findingsCtrl := GetPowerScribeFindingsCtrl()
+  Send, !w
+  ClipWait, 1
+  ControlSetText, %findingsCtrl%, %Clipboard%, %POWERSCRIBE%
+Return
+
 CapsLock::
   ToggleRecording()
+Return
+
+Tab & 1::
+  KeyWait, 1
+  KeyWait, Tab
+  openStudyFromEmacs()
 Return
 
 #If

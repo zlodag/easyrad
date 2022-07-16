@@ -19,17 +19,7 @@ PowermicMap(data) {
     case 0x2: ; Previous button
     case 0x8: ; Next button
     case 0x10: ; Fast Backward button
-        if WinActiveViewer() {
-            Send {PgUp}
-        } else if WinActive(POWERSCRIBE) {
-            Send ^z
-        }
     case 0x20: ; Fast Forward button
-        if WinActiveViewer() {
-            Send {PgDn}
-        } else if WinActive(POWERSCRIBE) {
-            Send ^y
-        }
     case 0x40: ; Play/Stop button
         ActivateViewer()
         toggleLeftMouseZoom()
@@ -37,9 +27,11 @@ PowermicMap(data) {
         if WinActiveViewer() {
             Send ^{BackSpace}
         } else if WinActive(POWERSCRIBE) {
-            CopyTextArea()
-            Sleep, 50
             ActivateEmacs()
+            Sleep, 100
+            EmacsGetFindings()
+        } else if WinActive("ahk_exe emacs.exe") {
+            ActivatePowerScribe()
         }
     case 0x80: ; Left custom button
         if WinActiveViewer() {
@@ -51,8 +43,8 @@ PowermicMap(data) {
         if WinActiveViewer() {
             Send {Down}
         } else if WinActive(POWERSCRIBE) {
-            Acc := GetIVLastAccession()
-            Date := GetIVStudyDate(Acc)
+            Acc := IVGetLatestAccession()
+            Date := IVGetStudyDate(Acc)
             SendInput, {Space}%Date%
             TransientToolTip(Acc " : " Date)
         } 
