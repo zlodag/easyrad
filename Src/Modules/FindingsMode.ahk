@@ -1,12 +1,15 @@
 GetPowerScribeFindings() {
+    ;; Get trimmed text from the Findings Mode textbox control
+    ;; Returns an Array of Strings
     findingsCtrl := GetPowerScribeFindingsCtrl()
     ControlGetText, Findings, %findingsCtrl%, %POWERSCRIBE%
+    Findings := Trim(Findings, " `t`n`r")
     Return StrSplit(Findings, "`n")
 }
 
 SetPowerScribeFindings(lines) {
     findingsCtrl := GetPowerScribeFindingsCtrl()
-    text := JoinLines(lines) 
+    text := JoinLines(lines)
     ControlSetText, %findingsCtrl%, %text%, %POWERSCRIBE%
     Return lines
 }
@@ -28,6 +31,7 @@ PopLine(lines, n) {
     for index, value in lines {
         if (index == n) {
             Selected := RegexReplace(value, "^[0-9 ]+\s>\s+")
+            Selected := Trim(Selected, " `t`n`r")
             continue
         }
         Results.Push(value)
@@ -42,6 +46,7 @@ SplitLines(text) {
 }
 
 JoinLines(lines) {
+    ;; Join an array of lines into a single string and trim the ends 
     Result := ""
     for index, value in lines
         Result .= value "`n"

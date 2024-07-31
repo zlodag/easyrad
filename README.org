@@ -1,5 +1,29 @@
 * Change Log
 
-** 01/06/2022
+** 01/06/2022: Refined logic for retrieving previous study dates
 
-- Refined logic for retrieving previous study dates
+** 31/07/2022: Improve IV get current accession number
+#+begin_quote
+[2022-07-31 17:18:37.820 InteleViewer vfio-win10 (TRACE) {34}] Repopulating patient order table, active patient is: WorklistPatient[PatientId: *******], active order: DefaultOrderId[PatId=******* AccNum=CA-16736856-CT]
+#+end_quote
+
+#+begin_quote
+[Current study: Study [CT Acc CA-16736856-CT Pid ******* Dated 2022-07-29]]
+#+end_quote
+
+#+begin_quote
+IvFacade: FOCUS on UWII Uuid[dbe19e19-808c-4cdb-8f4c-fa0fd5e7a68b] Acc[CA-16736870-CT] Pid[*******] StudyUid[1.2.840.114202.4.3035251015.513880767.1539010082.1066768196] LinkedAcc[]
+#+end_quote
+
+* Explorations
+** Dictation
+- Dragon exposes a COM interface
+** Autotext
+- Custom RTBT (RichTextBoxTemplate) format by Nuance
+- Kailo uses a REST client to retrieve it from server
+- However, Kailo does not work on my computer so I cannot inspect the response
+** Keyboard
+** Mouse
+
+* Features
+

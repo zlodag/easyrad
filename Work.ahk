@@ -1,23 +1,15 @@
-; PowerMic Buttons for PowerScribe 360
-; by Tubo Shi MBBS
-#Include %A_ScriptDir%
-#NoEnv
-#SingleInstance, force
-#InstallKeybdHook
-#MaxMem 256
-SendMode Input ; Recommended for new scripts due to its superior speed and reliability.
-SetTitleMatchMode, 2
-SetTitleMatchMode, Fast
-SetCapsLockState, AlwaysOff ; Disables CapsLock globally
+; EasyRad - Radiology Automation Suite
+; by Tubo Shi MBChB
 
-#Include, Src\Common.ahk
-#Include, Src\Gui.ahk
-#Include, Src\Launchers.ahk
-#Include, Src\FindingsMode.ahk
-#Include, Src\Dictation.ahk
+#SingleInstance Force
+SetCapsLockState "AlwaysOff"
 
-GoSub, DictaphoneInit
-Return ; End of auto-execution
+#Include Src\Common.ahk
+#Include Src\Gui\Tray.ahk
+#Include Src\Modules\Emacs.ahk
+#Include Src\Modules\Keyboard.ahk
+#Include Src\Modules\Dictation.ahk
+#Include Src\keyboard_custom.ahk
 
-#Include, Src\ImageAnywhere.ahk
-#Include, Src\keyboard_custom.ahk
+Config := UserConfig(A_MyDocuments . "\EasyRad.ini")
+inteleviewer := InteleviewerApp()

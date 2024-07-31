@@ -1,105 +1,74 @@
-;; ==================
-;; Global keybindings
-;; ==================
+#Include Common.ahk
 
-F13::
-NumpadDiv:: 
-  ;; Boss key
-  ActivateComrad()
-  GroupActivate, RadiologyGroup
-  GroupActivate, RadiologyGroup
-  GroupActivate, RadiologyGroup
-Return
+;; ===== Global =====
+F1:: opener.OpenHighlightedText()
 
-;; ===============================================
-;; Hotkeys for when in InterleView or PowerScribe
-;; ===============================================
-#IfWinActive ahk_group RadiologyGroup 
+
+;; ===== Comrad =====
+#HotIf WinActive("COMRAD")
+
+F2:: ConcertoWeb.OpenHighlightedPatientProfile()
+
+
+;; ===== InterleView or PowerScribe =====
+#HotIf WinActive("ahk_group RadiologyGroup")
 
 ESC::
-CapsLock::
-  ToggleRecording()
-Return
+CapsLock:: PowerscribeApp.ToggleRecording()
 
-^ESC::
-^CapsLock::
-  ToggleFindingsMode()
-Return
-
-NumpadDot::
-NumpadDel::
-  ShowIVReport()
-Return
-
-Tab::
-  ;; next fields
-  control := GetPowerScribeEditorCtrl()
-  ActivatePowerScribe()
-  ControlSend, %control%, {Tab}, %POWERSCRIBE%
-Return
+;; next fields
+Tab:: PowerScribeApp.NextTabStop()
 
 ;; prev fields
-+Tab::
-  control := GetPowerScribeEditorCtrl()
-  ActivatePowerScribe()
-  ControlSend, %control%, {Blind}{Alt Up}{Shift Down}{Tab}, %POWERSCRIBE%
-Return
++Tab:: PowerScribeApp.PrevTabStop()
 
-;; ====================================
-;; Powerscribe
-;; ====================================
-#If WinActive(POWERSCRIBE)
 
-#c::
-  change_consultant()
-  { 
-    Send {LAlt Down}ta{LAlt Up}
-  }
-Return
+;; ===== InterleView Viewer Only =====
+#HotIf InteleviewerApp.ViewerActive()
 
-#d::
-  check_revisions()
-  { 
-    Send {LAlt Down}ti{LAlt Up}
-    Sleep, 200
-    Send {Tab}
-  }
-Return
+F1:: {
+    Acc := InteleviewerApp.CurrentStudy.Acc
+    NHI := InteleviewerApp.CurrentStudy.NHI
 
-;; =======================================
-;; Hotkeys for when in Comparing Revisions
-;; =======================================
-#IfWinActive Compare Report Revisions
+    if (A_Clipboard == Acc) {
+        A_Clipboard := NHI
+        TransientToolTip("NHI copied: " A_Clipboard)
+    } else if (A_Clipboard == NHI) {
+        A_Clipboard := Acc
+        TransientToolTip("Acc copied: " A_Clipboard)
+    } else {
+        A_Clipboard := Acc
+        TransientToolTip("Acc copied: " A_Clipboard)
+    }
+}
+
+
+;; ===== Powerscribe Only =====
+#HotIf WinActive(PowerScribeApp.WinTitle)
 
 F1::
-  WinGetText, visibleText
-  RegExMatch(visibleText, "[A-Z]{3}[0-9]{4}", NHI)
-  Clipboard := NHI
-Return
+openImageAnywhere(ThisHotkey) {
+    AccessionNumber := PowerScribeApp.GetAccessionNumber()
+    opener.openStudy(AccessionNumber)
+}
 
-F2::
-  WinGetText, visibleText
-  RegExMatch(visibleText, "[A-Z]{2}-[0-9]{8}-[A-Z]{2}", AccessionNumber)
-  Clipboard := AccessionNumber
-  StartNewSearch()
-Return
+F2:: {
+    ;; Toggle between copying NHI and Accession number
+    Acc := PowerScribeApp.GetAccessionNumber()
+    NHI := PowerScribeApp.GetNHI()
 
-Down::
-  Send {Enter}
-  Send {Down}
-  Sleep 500
-  check_revisions()
-Return
+    if (A_Clipboard == Acc && NHI) {
+        A_Clipboard := NHI
+        TransientToolTip("NHI copied: " A_Clipboard)
+    }
+    else if (A_Clipboard == NHI && Acc) {
+        A_Clipboard := Acc
+        TransientToolTip("Acc copied: " A_Clipboard)
+    }
+    else {
+        A_Clipboard := Acc
+        TransientToolTip("Acc copied: " A_Clipboard)
+    }
+}
 
-Up::
-  Send {Enter}
-  Send {Up}
-  Sleep 500
-  check_revisions()
-Return
-
-b::ControlSend, {PgUp}, GetEditorFormClassNN("RichEdit20W")
-j::ControlSend, {Down}, GetEditorFormClassNN("RichEdit20W")
-k::ControlSend, {Up}, GetEditorFormClassNN("RichEdit20W")
-
-#If  ;; End IfWinActive
+#HotIf

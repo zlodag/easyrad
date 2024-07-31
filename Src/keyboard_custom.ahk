@@ -1,312 +1,205 @@
-#Include, Src\Keyboard_common.ahk
+#Include Common.ahk
+#Include Keyboard_common.ahk
 
-;; ==================
-;; Timers
-;; ==================
+`:: toggleEmacs()
 
-;; ==================
-;; Global keybindings
-;; ==================
+F13::
+NumpadDiv:: {
+  ;; Boss key
+  ComradApp.WinActivate()
+  PowerScribeApp.Activate()
+  GroupActivate "RadiologyGroup"
+  GroupActivate "RadiologyGroup"
+}
 
-End::
-  FileAppend, %ClipboardAll%, clip.xml
-Return 
+;; ===== InterleView or PowerScribe =====
 
-`::
-  toggleEmacs()
-Return
+#HotIf WinActive("ahk_group RadiologyGroup")
 
-MButton::
-  stickyRightMouse() {
-    static switch := 0
-    ActivateViewer()
-    if switch {
-      send {MButton}
-      switch := 0
-    } else {
-      send {MButton Down}
-      switch := 1
-    }
-  }
+^ESC::
+^CapsLock:: {
+  PowerscribeApp.ToggleFindingsMode()
+}
 
-Tab::
-  Send {Tab}
-Return
+NumpadDot::
+NumpadDel:: {
+  InteleviewerApp.ShowReport()
+}
 
-#UseHook, Off
-Tab & 1::
-  KeyWait, 1
-  CopySelectionAndOpenImage()
-Return
-#Usehook
+WheelLeft:: PowerScribeApp.Activate()
+WheelRight:: InteleviewerApp.ActivateViewer()
 
-Tab & 2::
-  KeyWait, 2
-  Send {F2}
-Return
+^+t:: InteleviewerApp.PriorStudiesListView()
 
-Tab & 3::
-  KeyWait, 3 
-  Send {F3}
-Return
+^+d:: {
+  Acc := InteleviewerApp.GetLatestAccession()
+  Output := InteleviewerApp.GenerateComparisonLine(Acc)
+  EditPaste Output, PowerScribeApp.GetEditorCtrl(), PowerScribeApp.WinTitle
+}
 
-Tab & 4::
-  KeyWait, 4
-  Send {F4}
-Return
 
-Tab & 5::
-  KeyWait, 5
-  Send {F5}
-Return
+;; ===== InterleViewer =====
 
-Tab & 6::
-  KeyWait, 6
-  Send {F6}
-Return
-
-Tab & 7::
-  KeyWait, 7
-  Send {F7}
-Return
-
-Tab & 8::
-  KeyWait, 8
-  Send {F8}
-Return
-
-Tab & 9::
-  KeyWait, 9
-  Send {F9}
-Return
-
-Tab & 0::
-  KeyWait, 0
-  Send {F10}
-Return
-
-Tab & -::
-  KeyWait, -
-  Send {F11}
-Return
-
-Tab & =::
-  KeyWait, =
-  Send {F12}
-Return
-
-/*
-~::
-  FileRead, Clipboard, *c C:\Users\tubos\OneDrive - Canterbury District Health Board\home\clip.rtf
-  MsgBox % Clipboard 
-*/
-
-;; ===============================================
-;; Hotkeys for when in InterleView or PowerScribe
-;; ===============================================
-#IfWinActive ahk_group RadiologyGroup 
-Return
-
-;; ======================================
-;; InterleViewer
-;; ======================================
-#If WinActive("^ ahk_exe InteleViewer.exe")
-
-/* WheelRight::
-  ;; Drag and drop images with "Mouse back button"
-  Send "d{LButton Down}"
-Return 
-*/
-
-/* WheelRight Up::
-  Send "{LButton Up}"
-  Sleep 250
-  Send "z"
-Return 
-*/
+#HotIf WinActive("^ ahk_exe InteleViewer.exe", , "Chat")
 
 Numpad0::
-NumpadIns::
-  ;; Numpad0/NumpadIns resets image
-  Send ^{BackSpace}
-Return
+NumpadIns:: Send "^{BackSpace}" ;; resets image
 
 XButton2::
-NumpadSub:: 
-  Send {PgUp}
-Return
+NumpadSub:: Send "{PgUp}"
 
 XButton1::
-NumpadAdd::
-  Send {PgDn}
-Return
+NumpadAdd:: Send "{PgDn}"
 
 XButton1 & WheelDown::
-XButton1 & WheelUp::
-  cycleIVWindow() {
-    static window := 0
-    if (A_ThisHotkey = "XButton1 & WheelDown") {
-      switch window {
-      case 0:
-        Send {F5}
-        window := 1
-      return
+cycleIVWindow(ThisHotKey) {
+  CurrentWindowName := InteleviewerApp.GetCurrentWindowLevel()
+  Windows := [
+    "WINDOW-LEVEL-RESET", ; Reset = F2
+    "WINDOW-LEVEL-PRESET-3", ; Lung = F5
+    "WINDOW-LEVEL-PRESET-4", ; Brain = F6
+    "WINDOW-LEVEL-PRESET-5", ; Bone = F7
+    "WINDOW-LEVEL-PRESET-6"  ; Head and neck = F8
+  ]
+  CurrentIndex := HasVal(Windows, CurrentWindowName) ; Returns 0 if not found
+  CurrentIndex += 1
+
+  switch Mod(Abs(CurrentIndex), Windows.Length) {
+    case 0:
+      Send "{F8}"
     case 1:
-      Send {F7}
-      window := 0
-    return
+      Send "{F2}"
+    case 2:
+      Send "{F5}"
+    case 3:
+      Send "{F6}"
+    case 4:
+      Send "{F7}"
   }
-} else if (A_ThisHotkey = "XButton1 & WheelUp") {
-  Send {F2}
-  window := 0
 }
+
+XButton1 & WheelUp::
+cycleIVMouseTool(ThisHotKey) {
+  CurrentTool := InteleviewerApp.GetCurrentTool()
+  Tools := [
+    "ZOOM", ; Z
+    "MAG-GLASS", ; G
+    "STACK", ; S
+    "DRAG-AND-SWAP", ; D
+  ]
+  CurrentIndex := HasVal(Tools, CurrentTool) ; Returns 0 if not found
+  CurrentIndex += 1
+
+  switch Mod(Abs(CurrentIndex), Tools.Length) {
+    case 0:
+      Send "z"
+    case 1:
+      Send "z"
+    case 2:
+      Send "g"
+    case 3:
+      Send "s"
+    case 4:
+      Send "d"
+  }
 }
 
-;; Call
-^+c::
-  match := IVGetCurrentStudy()
-  EmacsCapture("c", match.ACC)
-Return
+Space:: TransientToolTip InteleviewerApp.GetCurrentTool()
 
-;; Follow ups
-^+f:: 
-  match := IVGetCurrentStudy()
-  EmacsCapture("f", match.ACC)
-Return
 
-;; Log case
-^+l:: 
-  match := IVGetCurrentStudy()
-  EmacsCapture("l", match.ACC)
-Return
-
-;; Report
-^+r:: 
-  match := IVGetCurrentStudy()
-  EmacsCapture("r", match.ACC)
-Return
-
-;; ======================================
-;; InterleViewer Search
-;; ======================================
-#If WinActive(INTELEVIEWER_SEARCH)
-Return
-
-;; ====================================
-;; Powerscribe
-;; ====================================
-#If WinActive(POWERSCRIBE)
-  #Include src\Emacs.ahk
-
-;; Bold
-^*::
-  send_reset("{Control Down}b{Control Up}")
-Return
-
-;; Title case (upper case and bold)
-^$::
-NumpadHome::
-  control := GetPowerScribeToolbarCtrl()
-  ControlClick %control%, %POWERSCRIBE%,,,, "x20 y20 NA"
-  ControlClick %control%, %POWERSCRIBE%,,,, "x130 y20 NA"
-Return
-
-;; Log case
-^+c::
-  Send, ^c
-  ClipWait, 1
-  EmacsCapturePowerScribe("c", GetPowerScribeAccession(), Clipboard)
-Return
-
-^+f::
-  Send, ^c
-  ClipWait, 1
-  EmacsCapturePowerScribe("f", GetPowerScribeAccession(), Clipboard)
-Return
-
-^+r::
-  Send, ^c
-  ClipWait, 1
-  EmacsCapturePowerScribe("r", GetPowerScribeAccession(), Clipboard)
-Return
-
-^i::
-  lines := SetPowerScribeFindings(AddNumbering(GetPowerScribeFindings()))
-  Input, n,,{Space}{Enter}
-  updated := PopLine(lines, n)
-  SetPowerScribeFindings(RemoveNumbering(updated.Lines))
-  Clipboard := updated.Selected
-  Send ^v
-Return
-
-^+i::
-  Clipboard := ExtractPowerScribeImpressions()
-  ClipWait, 1
-  Send, ^v
-Return
-
-!o::
-  EditorControl := GetPowerScribeEditorCtrl()
-  FindingsControl := GetPowerScribeFindingsCtrl()
-  ControlGetFocus, CurrentControl, %POWERSCRIBE%
-
-  if (CurrentControl == EditorControl) {
-    ControlFocus, %FindingsControl%, %POWERSCRIBE%
-  } else if (CurrentControl == FindingsControl) {
-    ControlFocus, %EditorControl%, %POWERSCRIBE%
+^c:: {
+  static toggle := 0
+  A_Clipboard := ""
+  if toggle = 0 {
+    A_Clipboard := InteleviewerApp.CurrentStudy.Acc
+    toggle := 1
+  } else if toggle = 1 {
+    A_Clipboard := InteleviewerApp.GetLatestAccession()
+    toggle := 0
   }
-Return
+  ClipWait 1
+  TransientToolTip("Acc copied: " A_Clipboard)
+}
 
-;; Search for relevant reports
-F5::
-  InputBox, needle, "Search Report", "What would you like to search?"
-  loop {
-    ControlGetText, content, ps_editor_ctrl, POWERSCRIBE
-    foundPos := InStr(content, needle)
-    if (foundPos = 0) {
-      ControlSend "{Down}", GetFormatToolbarClassNN(4), POWERSCRIBE
-      sleep, 500
-    } else {
-      break
-    }
-  }
-Return
+;; Capture on-call template
+^+c:: EmacsApp.CaptureByProtocol("C", InteleviewerApp.CurrentStudy.Acc, "", "")
 
-;; =======================================
-;; Hotkeys for when in Comparing Revisions
-;; =======================================
-#If WinActive("Compare Report Revisions")
-Return
+;; Capture follow-ups
+^+f:: EmacsApp.CaptureByProtocol("F", InteleviewerApp.CurrentStudy.Acc, "", "")
 
-;; =======================================
-;; Hotkeys for COMRAD
-;; =======================================
-#If WinActive("COMRAD")
-Return
+;; Capture a case to log
+^+l:: EmacsApp.CaptureByProtocol("L", InteleviewerApp.CurrentStudy.Acc, "", "")
 
-;; =======================================
-;; Hotkeys for Emacs
-;; =======================================
-#If WinActive("^ahk_exe emacs.exe")
-#y::
-EmacsGetFindings()
-Return
 
-#w::
-  findingsCtrl := GetPowerScribeFindingsCtrl()
-  Send, !w
-  ClipWait, 1
-  ControlSetText, %findingsCtrl%, %Clipboard%, %POWERSCRIBE%
-Return
+;; ===== InterleViewer Search =====
 
-CapsLock::
-  ToggleRecording()
-Return
+#HotIf WinActive(InteleviewerApp.SearchActive())
 
-Tab & 1::
-  KeyWait, 1
-  KeyWait, Tab
-  openStudyFromEmacs()
-Return
+;; ===== Powerscribe =====
+#HotIf WinActive(PowerscribeApp.WinTitle)
 
-#If
+^i:: {
+  currentAccession := InteleviewerApp.GetLatestAccession()
+  Date := InteleviewerApp.GetStudyDate(currentAccession)
+  TransientToolTip("Acc " currentAccession ": " Date)
+  Send Date
+}
+
+^+i:: {
+  InteleviewerApp.PriorStudiesListView()
+}
+
+XButton1:: PowerScribeApp.NextTabStop()
+XButton2:: PowerScribeApp.PrevTabStop()
+
+#c:: PowerScribeApp.ChangeConsultant()
+
+#d:: PowerScribeApp.CheckRevisions()
+
+;; ===== Comparing Revisions =====
+
+#HotIf WinActive("Compare Report Revisions ahk_exe Nuance.PowerScribe360.exe")
+/*
+F1:: {
+  visibleText := WinGetText
+  RegExMatch(visibleText, "[A-Z]{3}[0-9]{4}", &NHI)
+  Clipboard := NHI
+}
+
+F2:: {
+  visibleText := WinGetText
+  RegExMatch(visibleText, "[A-Z]{2}-[0-9]{8}-[A-Z]{2}", &AccessionNumber)
+  Clipboard := AccessionNumber
+  InteleviewerApp.ActivateSearch()
+}
+*/
+
+Down:: {
+  Control := PowerScribeApp._EditorFormClassNN("Window.8")
+  ControlSend "{Down}", Control, PowerScribeApp.WinTitle
+}
+
+Up:: {
+  Send "{Enter}"
+  Send "{Up}"
+  Sleep 500
+}
+
+/*
+b:: ControlSend "{PgUp}", GetEditorFormClassNN("RichEdit20W")
+j:: ControlSend "{Down}", GetEditorFormClassNN("RichEdit20W")
+k:: ControlSend "{Up}", GetEditorFormClassNN("RichEdit20W")
+*/
+
+
+;; ===== COMRAD =====
+#HotIf WinActive("COMRAD")
+
+
+;; ===== Emacs =====
+#HotIf EmacsApp.WinActive()
+
+F1:: EmacsApp.OpenStudyByAccession()
+!F1:: EmacsApp.OpenComradReport()
+
+#HotIf
