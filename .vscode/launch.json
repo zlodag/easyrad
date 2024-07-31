@@ -7,9 +7,8 @@
         {
             "type": "autohotkey",
             "request": "launch",
-            "runtime": "${workspaceFolder}/AutoHotkey/AutoHotkey64.exe",
-            "name": "AutoHotkey Debugger (Work)",
-            "program": "${workspaceFolder}/Work.ahk",
+            "name": "Main.ahk",
+            "program": "${workspaceFolder}/Src/Main.ahk",
             "stopOnEntry": false
         }
     ]
