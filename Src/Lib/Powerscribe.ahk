@@ -53,7 +53,7 @@ class PowerScribeApp {
             WinActivate this.WinTitle
     }
 
-    static isActive() {
+    static WinActive() {
         Return WinActive(this.WinTitle)
     }
 
@@ -87,7 +87,8 @@ class PowerScribeApp {
 
     static GetCurrentDraftFilePath() {
         accession := this.GetAccessionNumber()
-        Return A_WorkingDir . "/../home/drafts/" . accession . ".org"
+        path := A_MyDocuments "\Radiology\Drafts\"
+        Return path . accession . ".org"
     }
 
     static SaveFindingsContent() {

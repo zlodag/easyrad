@@ -19,11 +19,19 @@ class RadWhereCOM {
 
     Start() {
         this.ctrl.Start()
+        ComObjConnect(this.ctrl, this)
     }
 
     InsertAutoText(name, replace := false) {
         If not this.LoggedIn
             this.Start()
         this.ctrl.InsertAutoText(name, replace)
+    }
+
+    ReportOpened(params*) {
+
+    }
+    ReportClosed(params*) {
+
     }
 }

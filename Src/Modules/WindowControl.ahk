@@ -8,7 +8,7 @@ GroupAdd "EditorGroup", "^ ahk_exe emacs.exe"
 
 toggleInfoWindow() {
     ;; Toggle between search window and powerscribe
-    if (PowerScribeApp.isActive() or WinActive("ahk_exe emacs.exe")) {
+    if (PowerScribeApp.WinActive() or WinActive("ahk_exe emacs.exe")) {
         InteleviewerApp.ActivateReport()
     } else {
         PowerScribeApp.Activate()

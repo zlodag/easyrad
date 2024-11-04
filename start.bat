@@ -1,0 +1,1 @@
+start AutoHotkey\AutoHotkey64.exe Src\Main.ahk

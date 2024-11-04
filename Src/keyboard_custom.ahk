@@ -40,7 +40,7 @@ WheelRight:: InteleviewerApp.ActivateViewer()
 
 ;; ===== InterleViewer =====
 
-#HotIf WinActive("^ ahk_exe InteleViewer.exe", , "Chat")
+#HotIf InteleviewerApp.ViewerActive()
 
 Numpad0::
 NumpadIns:: Send "^{BackSpace}" ;; resets image
@@ -195,6 +195,7 @@ k:: ControlSend "{Up}", GetEditorFormClassNN("RichEdit20W")
 ;; ===== COMRAD =====
 #HotIf WinActive("COMRAD")
 
+^s::!s
 
 ;; ===== Emacs =====
 #HotIf EmacsApp.WinActive()

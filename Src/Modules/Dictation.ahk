@@ -1,7 +1,6 @@
 #Include ../Common.ahk
 #Include ../Lib/AHKHID.ahk
 #Include ./WindowControl.ahk
-#Include ./AutoTextSelector.ahk
 
 class Dictaphone extends Gui {
 
@@ -72,7 +71,10 @@ class Dictaphone extends Gui {
                 ;     ActivatePowerScribe()
                 ; }
             case 0x80: ; Left custom button
-                AutoTextSelectorGui(this.radwhere)
+                If InteleviewerApp.ViewerActive() or WinActive(InteleviewerDictaphoneGui.winTitle)
+                    InteleviewerDictaphoneGui.toggle()
+                Else If PowerScribeApp.WinActive() or WinActive(AutoTextSelectorGui.winTitle)
+                    AutoTextSelectorGui.toggle(this.radwhere)
             case 0x200: ; Right custom button
                 Acc := InteleviewerApp.GetLatestAccession()
                 Output := InteleviewerApp.GenerateComparisonLine(Acc)
@@ -82,5 +84,75 @@ class Dictaphone extends Gui {
                 Send "{F12}"
             Default: Return
         }
+    }
+}
+
+class AutoTextSelectorGui extends Gui {
+    static winTitle := "Insert AutoText"
+
+    __New(radwhere) {
+        super.__new("-SysMenu AlwaysOnTop", %this.__Class%.winTitle, this) ;; set the event sink to this object
+        if not radwhere.LoggedIn
+            radwhere.Start()
+
+        this.OnEvent("Escape", (*) => this.Destroy())
+
+        this.Add("GroupBox", "w210 h260", "Radiography")
+        this.Add("Button", "xp5 yp15 w60 h50 Section", "Chest").OnEvent("Click", (*) => radwhere.InsertAutoText("xray chest"))
+        this.Add("Button", "w60 h50", "Abdomen").OnEvent("Click", (*) => radwhere.InsertAutoText("xray abdomen"))
+        this.Add("Button", "w60 h50 Section ys", "C spine").OnEvent("Click", (*) => radwhere.InsertAutoText("xray spine cervical"))
+        this.Add("Button", "w60 h50 xp", "T spine").OnEvent("Click", (*) => radwhere.InsertAutoText("xray spine thoracic"))
+        this.Add("Button", "w60 h50 xp", "L spine").OnEvent("Click", (*) => radwhere.InsertAutoText("xray spine lumbar"))
+        this.Add("Button", "w60 h50 xp", "Pelvis").OnEvent("Click", (*) => radwhere.InsertAutoText("xray pelvis"))
+        this.Add("Button", "w60 h50 Section ys", "Trauma").OnEvent("Click", (*) => radwhere.InsertAutoText("xray acute"))
+        this.Add("Button", "w60 h50 xp", "Post cast").OnEvent("Click", (*) => radwhere.InsertAutoText("xray cast"))
+        this.Add("Button", "w60 h50 xp", "Post op").OnEvent("Click", (*) => radwhere.InsertAutoText("xray post"))
+
+        CoordMode "Mouse", "Screen"
+        MouseGetPos(&xps, &ypos)
+        this.Show("x" xps " y" ypos)
+    }
+
+    static toggle(radwhere) {
+        If WinExist(this.winTitle)
+            WinClose(this.winTitle)
+        Else
+            AutoTextSelectorGui(radwhere)
+    }
+}
+
+class InteleviewerDictaphoneGui extends Gui {
+    static winTitle := "Inteleviewer Controller"
+
+    __New() {
+        super.__new("-SysMenu AlwaysOnTop", %this.__Class%.winTitle, this) ;; set the event sink to this object
+        this.OnEvent("Escape", (*) => this.Destroy())
+
+        this.Add("GroupBox", "w280 h80 Section", "Series Layout")
+        this.Add("Button", "xp5 yp15 w60 h50", "1").OnEvent("Click", (*) => this.ControlSend("1"))
+        this.Add("Button", "yp w60 h50", "2").OnEvent("Click", (*) => this.ControlSend("2"))
+        this.Add("Button", "yp w60 h50", "3").OnEvent("Click", (*) => this.ControlSend("3"))
+        this.Add("Button", "yp w60 h50", "4").OnEvent("Click", (*) => this.ControlSend("4"))
+        this.Add("GroupBox", "xs w280 h80 Section", "Window and Level")
+        this.Add("Button", "xp5 yp15 w60 h50", "Reset").OnEvent("Click", (*) => this.ControlSend("{F2}"))
+        this.Add("Button", "yp w60 h50", "Lung").OnEvent("Click", (*) => this.ControlSend("{F5}"))
+        this.Add("Button", "yp w60 h50", "Brain").OnEvent("Click", (*) => this.ControlSend("{F6}"))
+        this.Add("Button", "yp w60 h50", "Bone").OnEvent("Click", (*) => this.ControlSend("{F7}"))
+
+        CoordMode "Mouse", "Screen"
+        MouseGetPos(&xps, &ypos)
+        this.Show("x" xps " y" ypos)
+    }
+
+    ControlSend(keys) {
+        WinActivate InteleviewerApp.WinTitle_Viewer, , InteleviewerApp.WinTitle_Viewer_Exclude
+        Send keys
+    }
+
+    static toggle() {
+        If WinExist(this.winTitle)
+            WinClose(this.winTitle)
+        Else
+            InteleviewerDictaphoneGui()
     }
 }

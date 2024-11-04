@@ -1,6 +1,8 @@
 #include ../Common.ahk
 
 class InteleviewerApp {
+    static WinTitle_Viewer := ".* InteleViewer.* ahk_exe InteleViewer.exe"
+    static WinTitle_Viewer_Exclude := "^(Search.*)|(Chat.*)"
     static WinTitle_Search := "Search Tool"
     static WinTitle_Login := "INTELEPACS - InteleViewer Login"
     static RE_Dragged_Uid := "Drag started for thumbnail dataset PersistentImageId \[mSeriesInstanceUid=(?P<Uid>[0-9.]+),"
@@ -9,7 +11,7 @@ class InteleviewerApp {
 
     static ActivateViewer() {
         SetTitleMatchMode "RegEx"
-        WinActivate ".* InteleViewer.* ahk_exe InteleViewer.exe", , "^ (Search.*) | (Chat.*)"
+        WinActivate ".* InteleViewer.* ahk_exe InteleViewer.exe", , "^(Search.*)|(Chat.*)"
     }
 
     static ActivateSearch() {
@@ -28,7 +30,7 @@ class InteleviewerApp {
 
     static ViewerActive() {
         SetTitleMatchMode "RegEx"
-        return WinActive(".* InteleViewer.* ahk_exe InteleViewer.exe", , "^ (Search.*) | (Chat.*)")
+        return WinActive(this.WinTitle_Viewer, , this.WinTitle_Viewer_Exclude)
     }
 
     static WinExist() {
@@ -37,10 +39,18 @@ class InteleviewerApp {
 
     static LogFile() {
         ;; The entire log file, can be very big in size in a long session
-        LogFile := A_Temp "\CViewer.log"
         DefaultLogFile := EnvGet("USERPROFILE") "\AppData\Local\Temp\CViewer.log"
-        if not FileExist(LogFile)
+        PortableLogFile := A_Temp "\CViewer.log"
+
+        If FileExist(DefaultLogFile) and FileExist(PortableLogFile)
+            If FileGetTime(DefaultLogFile) > FileGetTime(PortableLogFile)
+                LogFile := DefaultLogFile
+            Else
+                LogFile := PortableLogFile
+        Else If FileExist(DefaultLogFile)
             LogFile := DefaultLogFile
+        Else
+            LogFile := PortableLogFile
         return FileRead(LogFile)
     }
 
@@ -327,24 +337,20 @@ class InteleviewerApp {
     static QueryPriorStudies(NHI) {
         ;; Queries the Intelerad server for a string of prior studies
         ;; Caches the result for the current NHI
-        static CurrentNHI := NHI
-        static Response := ""
+        formattedNHI := this._BuildRelatedNHIQueryString(nhi)
+        match := this.GetAuthConfig()
+        baseUrl := match.baseUrl
+        username := match.username
+        sessionId := match.sid
+        url := baseUrl "/InteleBrowser/InteleBrowser.Search"
 
-        if (CurrentNHI != NHI) or ( not Response) {
-            formattedNHI := this._BuildRelatedNHIQueryString(nhi)
-            match := this.GetAuthConfig()
-            baseUrl := match.baseUrl
-            username := match.username
-            sessionId := match.sid
-            url := baseUrl "/InteleBrowser/InteleBrowser.Search"
+        whr := ComObject("WinHttp.WinHttpRequest.5.1")
+        whr.Open("POST", url, true)
+        whr.SetRequestHeader("Content-type", "application/x-www-form-urlencoded")
+        whr.Send("UserName=" username "&SID=" sessionId "&sf0=" formattedNHI "&comparator0=EQUALS&searchScope=internal&Action=appletsearch&searchProtocolVersion=4")
+        whr.WaitForResponse()
+        Response := whr.ResponseText
 
-            whr := ComObject("WinHttp.WinHttpRequest.5.1")
-            whr.Open("POST", url, true)
-            whr.SetRequestHeader("Content-type", "application/x-www-form-urlencoded")
-            whr.Send("UserName=" username "&SID=" sessionId "&sf0=" formattedNHI "&comparator0=EQUALS&searchScope=internal&Action=appletsearch&searchProtocolVersion=4")
-            whr.WaitForResponse()
-            Response := whr.ResponseText
-        }
         return this._ParsePriorStudiesResponse(Response)
     }
 

@@ -79,7 +79,7 @@ class EmacsApp {
         A_Clipboard := ""
         ControlSend "{F1}", , this.WinTitle
         ClipWait 1
-        opener.OpenString(A_Clipboard)
+        opener.OpenStudy(A_Clipboard)
     }
 
     static OpenComradReport() {
@@ -90,12 +90,12 @@ class EmacsApp {
     }
 
     static SendClientCommand(command, no_wait := True) {
-        arguments := " -f " this.ServerFile . ' --alternate-editor="" '
+        arguments := ' -f ' . '"' this.ServerFile '"' . ' --alternate-editor="" '
         if no_wait
             arguments .= "--no-wait "
 
         If !WinExist(this.WinTitle)
-            this.Start()
+            MsgBox "Emacs has not started yet"
         Run this.ClientPath arguments command
     }
 
@@ -114,13 +114,14 @@ class EmacsApp {
         Else
             Content := ""
 
-        EmacsApp.CaptureByProtocol("C", Acc, " ", Content)
+        ; EmacsApp.CaptureByProtocol("C", Acc, " ", Content)
+        FileAppend Content, PowerScribeApp.GetCurrentDraftFilePath()
     }
 }
 
 
 toggleEmacs() {
-    if PowerScribeApp.isActive() {
+    if PowerScribeApp.WinActive() {
         EmacsApp.WinActivate()
     }
     else if WinActive("ahk_exe emacs.exe") {
