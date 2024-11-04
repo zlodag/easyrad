@@ -8,6 +8,7 @@
 Config := UserConfig(A_MyDocuments . "\EasyRad.ini")
 inteleviewer := InteleviewerApp()
 opener := StudyOpener(config)
+radwhere := RadWhereCOM()
 
 class MainGui extends Gui {
 

@@ -31,6 +31,7 @@ class InteleViewerCOM {
     GetSessionId() {
         Cookies := this.client.getAllResponseHeaders()
         RegExMatch(Cookies, this.sid_regex, &result)
+        ;; todo: catch error if failed authentication
         return result.sid
     }
 
@@ -46,19 +47,13 @@ class InteleViewerCOM {
     GetPriorStudies(NHI) {
         ;; Queries the Intelerad server for a string of prior studies
         ;; Caches the result for the current NHI
-        static CurrentNHI := NHI
-        static Response := ""
-
-        if (CurrentNHI != NHI) or ( not Response) {
-            url := this.url "/InteleBrowser/InteleBrowser.Search"
-
-            whr := ComObject("WinHttp.WinHttpRequest.5.1")
-            whr.Open("POST", url, true)
-            whr.SetRequestHeader("Content-type", "application/x-www-form-urlencoded")
-            whr.Send("UserName=" this.username "&SID=" this.sessionId "&sf0=" NHI "&comparator0=EQUALS&searchScope=internal&Action=appletsearch&searchProtocolVersion=4")
-            whr.WaitForResponse()
-            Response := whr.ResponseText
-        }
+        url := this.url "/InteleBrowser/InteleBrowser.Search"
+        whr := ComObject("WinHttp.WinHttpRequest.5.1")
+        whr.Open("POST", url, true)
+        whr.SetRequestHeader("Content-type", "application/x-www-form-urlencoded")
+        whr.Send("UserName=" this.username "&SID=" this.sessionId "&sf0=" NHI "&comparator0=EQUALS&searchScope=internal&Action=appletsearch&searchProtocolVersion=4")
+        whr.WaitForResponse()
+        Response := whr.ResponseText
         return Response
     }
 

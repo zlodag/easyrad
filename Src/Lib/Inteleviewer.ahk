@@ -28,7 +28,7 @@ class InteleviewerApp {
 
     static ViewerActive() {
         SetTitleMatchMode "RegEx"
-        WinActive ".* InteleViewer.* ahk_exe InteleViewer.exe", , "^ (Search.*) | (Chat.*)"
+        return WinActive(".* InteleViewer.* ahk_exe InteleViewer.exe", , "^ (Search.*) | (Chat.*)")
     }
 
     static WinExist() {
@@ -38,9 +38,9 @@ class InteleviewerApp {
     static LogFile() {
         ;; The entire log file, can be very big in size in a long session
         LogFile := A_Temp "\CViewer.log"
-        LogFile := EnvGet("USERPROFILE") "\AppData\Local\Temp\CViewer.log"
+        DefaultLogFile := EnvGet("USERPROFILE") "\AppData\Local\Temp\CViewer.log"
         if not FileExist(LogFile)
-            LogFile := EnvGet("USERPROFILE") "\AppData\Local\Temp\CViewer.log"
+            LogFile := DefaultLogFile
         return FileRead(LogFile)
     }
 
@@ -353,7 +353,7 @@ class InteleviewerApp {
         ;; [2023-07-18 13:57:04.301 InteleViewer R19348 (TRACE) {26}] Setting candidate patients info: [Candidate Patient: BBG355ZCRG[95%], Candidate Patient: BPM1488CRG[95%]]
         log := this.TrimmedLogFile()
         try {
-            RegExMatch(log, "s).*Build the task to search related series for \[(?P<NHIs>[A-Z0-9, ]+)\]", &match)
+            RegExMatch(log, "s).*Build the task to search related series for \[(?P<NHIs>[A-Z0-9,-\s]+)\]", &match)
             result := StrReplace(match.NHIs, ", ", "%5C")
             If InStr(result, NHI)
                 Return result
@@ -479,9 +479,9 @@ class InteleviewerApp {
         Send "^a"       ;; Clear saved username
         SendText username    ;; Type in username
         Send "{Tab}"
-        Sleep 100
+        Sleep 250
         SendText password  ;; Password
-        Sleep 500
+        Sleep 250
         Send "{Enter}"
         BlockInput 0
     }

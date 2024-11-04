@@ -33,6 +33,9 @@ class ComradApp {
     }
 
     static login(username, password, interface := 1) {
+        EnvSet "use_proxy", "off"
+        EnvSet "http_proxy"
+        EnvSet "https_proxy"
         If ComradApp.LoggedIn() {
             TransientTrayTip "Comrad is already running"
             return
@@ -47,10 +50,13 @@ class ComradApp {
             Run A_ComSpec ' /c c:\comrad_java\cdhb.bat'
             WinWait "Wget"
             WinWaitClose "Wget"
-            If WinWait(this.SelectInterfaceWinTitle, , 5)
-                this._select_interface(interface)
-            If WinWait(this.GenericWinTitle, , 5)
-                this._send_cred(username, password)
+            If WinWait(this.SelectInterfaceWinTitle, , 10) or WinWait(this.GenericWinTitle, , 10)
+                If WinExist(this.SelectInterfaceWinTitle) {
+                    this._select_interface(interface)
+                    If WinWait(this.GenericWinTitle)
+                        this._send_cred(username, password)
+                }
+            this._send_cred(username, password)
             return
         }
     }
@@ -60,13 +66,16 @@ class ComradApp {
         Sleep 500
         SetKeyDelay 10, 10
         ControlSend username "{Tab}" password "{Enter}", , this.GenericWinTitle
-        BlockInput 0
         WinWaitClose this.GenericWinTitle
+        BlockInput 0
     }
 
     static _select_interface(interface) {
+        WinActivate this.SelectInterfaceWinTitle
+        BlockInput 1
         Loop interface
             ControlSend "{Tab}", , this.SelectInterfaceWinTitle
         ControlSend "{Space}", , this.SelectInterfaceWinTitle
+        BlockInput 0
     }
 }

@@ -1,3 +1,5 @@
+#Include ../Common.ahk
+
 class StudyOpener {
     ;; login to all COMS
     ;; save COMS to object
@@ -18,12 +20,12 @@ class StudyOpener {
         for vendor, obj in this.IV_COM_objs
             responses[vendor] := obj.GetPriorStudies(id)
 
-        this._PriorStudiesListView(responses)
+        this._PriorStudiesListView(id, responses)
     }
 
-    _PriorStudiesListView(priorStudiesResponsesMap) {
+    _PriorStudiesListView(NHI, priorStudiesResponsesMap) {
         g := Gui()
-        g.Title := "Linked Search | EasyRad"
+        g.Title := NHI . " | Linked Search | EasyRad"
         LV := g.Add("ListView", "r40 w800", ["Date", "Mod", "Study", "Acc", "Provider"])
         vendorPrefixes := Map("CDHB", "CA", "PRG", "PR", "Reform", "RR", "Beyond", "BE")
         For vendor, response in priorStudiesResponsesMap {
@@ -33,7 +35,7 @@ class StudyOpener {
             For Study in priorsStudies {
                 ;; Deduplicate studies: only keep the study with the matching prefix
                 prefix := SubStr(Study.Acc, 1, 2)
-                if prefix = vendorPrefixes[vendor] and not HasVal(uniqueStudies, Study.Acc) {
+                if not HasVal(uniqueStudies, Study.Acc) {
                     LV.Add(, Study.Date, Study.Mod, Study.Desc, Study.Acc, vendor)
                     uniqueStudies.Push(Study.Acc)
                 }
