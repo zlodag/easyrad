@@ -93,7 +93,7 @@ class Request {
 					this.exam := StrReplace(this.exam, "LEFT")
 					this.exam := StrReplace(this.exam, "RIGHT")
 					this.exam := StrReplace(this.exam, "PLEASE") ; no special treatment for politeness
-					this.exam := StrReplace(this.exam, " AND ")
+					this.exam := RegExReplace(this.exam, "\bAND\b", " ")
 					this.exam := Trim(this.exam)
 					this.exam := RegExReplace(this.exam, "\s+", " ")
 				case "rf_original_priority":
