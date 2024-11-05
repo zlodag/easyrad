@@ -1,4 +1,4 @@
-;@Ahk2Exe-SetVersion 0.0.2
+;@Ahk2Exe-SetVersion 0.0.3
 #Requires AutoHotkey v2.0
 #Include <SQLite\SQLite>
 #Include <_JXON>
