@@ -27,6 +27,9 @@ CREATE TABLE IF NOT EXISTS "modality" (
 	"name"	TEXT NOT NULL UNIQUE,
 	PRIMARY KEY("id")
 ) STRICT;
+CREATE INDEX IF NOT EXISTS "label_examination" ON "label" (
+	"examination"
+);
 CREATE INDEX IF NOT EXISTS "modality_body_part_examination_name" ON "examination" (
 	"modality",
 	"body_part",
