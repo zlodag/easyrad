@@ -3,6 +3,12 @@
 #Include "Gui.ahk"
 #Include "Database.ahk"
 #Include "Config.ahk"
+#Include <JAB>
+
+DllPath := "Lib/WindowsAccessBridge-64.dll"
+JAB.base.base := JAB(DllPath)
+Sleep 200 
+
 
 SetTitleMatchMode 1
 
@@ -83,6 +89,7 @@ ForgetAlias(*)
 }
 
 
+
 #HotIf WinActive("COMRAD Medical Systems Ltd. ahk_class SunAwtFrame")
 
 ;~ t:: ; test clipboard 
@@ -112,18 +119,49 @@ Numpad5::
 			Exit
 		}
 	}
-	SendEvent "!c" ; Close any AMR popup with Alt+C
-
-	; Click on the left panel
-
-	MouseGetPos ,, &win
-	; if click method used: MouseGetPos &x, &y, &win 
-
-	if ThisHotkey = "MButton" && win != WinGetID() {
-		Click "M"
-		Exit
+	RestoreClipboard := A_Clipboard
+	A_Clipboard := ""
+	try {
+		WinTitle := "COMRAD Medical Systems Ltd. ahk_class SunAwtFrame"
+		el := JAB.ElementFromHandle(WinTitle)
+		pane := (el
+			.ElementFromPath("1,2")
+			.FindElement({Role:"panel"}, 2)
+			.children[1]
+			.FindElement({Role:"desktop pane"}, 2)
+		)
+		try {
+			pane.FindElement({Name: "AMR: Alerts", matchmode: 1}, 2)
+			SendEvent "!c" ; Close any AMR popup with Alt+C
+		}
+		tree := (pane
+			.FindElement({Name:"RTG - Referral Triage"}, 2)
+			.ElementFromPath("1,2,1,1,1,1,3,1,1,2,1,1,1")
+		)
+		tree.SetFocus()
+		SendEvent "^c" ; Copy
+	} catch {
+		if (ThisHotkey = "MButton") {
+			SendEvent "{Click}" ; Relies on the mouse position being over the middle pane or the pdf viewer to return focus to it and avoid a problem where the chat window is launched if the focus is higher than the main panes in the hierarchy, e.g. if Autonext has just been toggled and focus has not been returned to the panes
+		}
+		SendEvent "{F6}{Tab}"
+		SendEvent "^c" ; Copy
+		if !ClipWait(0.1) { ; the focus may have orignally been on the pdf viewer
+			SendEvent "{F6}{Tab}^c"
+		}
 	}
-	SendEvent "!c" ; Close any AMR popup with Alt+C
+	; SendEvent "!c" ; Close any AMR popup with Alt+C
+
+	; ; Click on the left panel
+
+	; MouseGetPos ,, &win
+	; ; if click method used: MouseGetPos &x, &y, &win 
+
+	; if ThisHotkey = "MButton" && win != WinGetID() {
+	; 	Click "M"
+	; 	Exit
+	; }
+	; SendEvent "!c" ; Close any AMR popup with Alt+C
 
 	; Click on the left panel
 	; DllCall("SetThreadDpiAwarenessContext", "ptr", -3, "ptr")
@@ -142,19 +180,23 @@ Numpad5::
 	; OR
 	; SendEvent "{F6}{F8}{F6}{Tab}"
 	; OR
-	if (ThisHotkey = "MButton") {
-		SendEvent "{Click}" ; Relies on the mouse position being over the middle pane or the pdf viewer to return focus to it and avoid a problem where the chat window is launched if the focus is higher than the main panes in the hierarchy, e.g. if Autonext has just been toggled and focus has not been returned to the panes
-	}
-	SendEvent "{F6}{Tab}"
-	RestoreClipboard := A_Clipboard
-	A_Clipboard := ""
-	SendEvent "^c" ; Copy
-	if !ClipWait(0.1) { ; the focus may have orignally been on the pdf viewer
-		SendEvent "{F6}{Tab}^c"
-		if !ClipWait(0.1) {
-			TrayTip "No request found"
-			Exit
-		}
+	; if (ThisHotkey = "MButton") {
+	; 	SendEvent "{Click}" ; Relies on the mouse position being over the middle pane or the pdf viewer to return focus to it and avoid a problem where the chat window is launched if the focus is higher than the main panes in the hierarchy, e.g. if Autonext has just been toggled and focus has not been returned to the panes
+	; }
+	; SendEvent "{F6}{Tab}"
+
+	; SendEvent "^c" ; Copy
+	; if !ClipWait(0.1) { ; the focus may have orignally been on the pdf viewer
+	; 	SendEvent "{F6}{Tab}^c"
+	; 	if !ClipWait(0.1) {
+	; 		TrayTip "No request found"
+	; 		Exit
+	; 	}
+	; }
+
+	if !ClipWait(0.1) {
+		TrayTip "No request found"
+		Exit
 	}
 
 	r := GetRequest(A_Clipboard)
