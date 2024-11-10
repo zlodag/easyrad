@@ -1,6 +1,6 @@
 #Requires AutoHotkey v2.0
-#Include "Config.ahk"
-#Include "AutoTriage.ahk"
+#Include AutoTriageConfig.ahk
+#Include AutoTriage.ahk
 
 class AutoTriageTrayMenu {
 
@@ -15,18 +15,18 @@ class AutoTriageTrayMenu {
         Loop 5 {
             DefaultTriageRankMenu.Add(A_Index, DefaultTriageRankMenuCallback)
         }
-        this.UpdateDefaultTriageRankMenu(Config.DefaultTriageRank || this.TriageRankDisabledMenuName, DefaultTriageRankMenu)
+        this.UpdateDefaultTriageRankMenu(AutoTriageConfig.DefaultTriageRank || this.TriageRankDisabledMenuName, DefaultTriageRankMenu)
         parentMenu.Add(this.StudySelectorMenuName, ToggleEnableStudySelector)
-        this.SetChecked(parentMenu, this.StudySelectorMenuName, Config.EnableStudySelector)
+        this.SetChecked(parentMenu, this.StudySelectorMenuName, AutoTriageConfig.EnableStudySelector)
         parentMenu.Add(this.ForgetAliasMenuName, MyForgetGui.Launch)
 
         DefaultTriageRankMenuCallback(MenuItemSelected, ItemPos, myMenu) {
-            Config.DefaultTriageRank := this.TriageRankDisabledMenuName == MenuItemSelected ? 0 : MenuItemSelected
+            AutoTriageConfig.DefaultTriageRank := this.TriageRankDisabledMenuName == MenuItemSelected ? 0 : MenuItemSelected
             this.UpdateDefaultTriageRankMenu(MenuItemSelected, myMenu)
         }
 
         ToggleEnableStudySelector(ItemName, ItemPos, menu) {
-            this.SetChecked(menu, this.StudySelectorMenuName, Config.EnableStudySelector := !Config.EnableStudySelector)
+            this.SetChecked(menu, this.StudySelectorMenuName, AutoTriageConfig.EnableStudySelector := !AutoTriageConfig.EnableStudySelector)
         }
 
     }

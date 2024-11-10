@@ -1,6 +1,6 @@
 #Requires AutoHotkey v2.0
-#Include "Database.ahk"
-#Include "AutoTriage.ahk"
+#Include Database.ahk
+#Include AutoTriage.ahk
 
 ErrorLog(msg) {
 	FileAppend A_Now ": " msg "`n", A_ScriptDir "\ErrorLog.txt"

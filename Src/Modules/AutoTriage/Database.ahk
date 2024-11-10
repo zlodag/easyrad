@@ -1,16 +1,20 @@
 #Requires AutoHotkey v2.0
-#Include <SQLite\SQLite>
+#Include ../../Lib/SQLite/SQLite.ahk
 
 ; todo - refactor to use Class_SQLiteDB and prepared statements https://www.autohotkey.com/boards/viewtopic.php?f=83&t=95389
 
 class Database {
 
-    static _DbFilename := "Database\AutoTriage.sqlite3"
+    static _DbFilename := "Database/AutoTriage.sqlite3"
     
     static __New() {
-        if A_IsCompiled && !FileExist(Database._DbFilename) {
-            DirCreate "Database"
-            FileInstall "Database\AutoTriage.sqlite3", Database._DbFilename
+        if !FileExist(Database._DbFilename) {
+            if (A_IsCompiled) {
+                DirCreate "Database"
+                FileInstall "Database/AutoTriage.sqlite3", Database._DbFilename
+            } else {
+                throw Error("Database file not found", , Database._DbFilename)
+            }
         }
     }
 

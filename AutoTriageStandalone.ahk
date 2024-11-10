@@ -1,8 +1,8 @@
 ;@Ahk2Exe-SetVersion 0.0.5
 #Requires AutoHotkey v2.0
 #SingleInstance Force
-#Include "Modules\AutoTriage\AutoTriage.ahk"
-#Include "Modules\AutoTriage\Tray.ahk"
+#Include Src/Modules/AutoTriage/AutoTriage.ahk
+#Include Src/Modules/AutoTriage/Tray.ahk
 
 A_TrayMenu.Delete
 AutoTriageTrayMenu.AddToMenu(A_TrayMenu)

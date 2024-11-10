@@ -1,9 +1,9 @@
 #Requires AutoHotkey v2.0
-#Include <_JXON>
-#Include "Gui.ahk"
-#Include "Database.ahk"
-#Include "Request.ahk"
-#Include "Config.ahk"
+#Include ../../Lib/_JXON.ahk
+#Include Gui.ahk
+#Include Database.ahk
+#Include Request.ahk
+#Include AutoTriageConfig.ahk
 
 SetTitleMatchMode 1
 
@@ -94,7 +94,7 @@ Numpad5::
 		case "Numpad3": TriageRank := 3
 		case "Numpad4": TriageRank := 4
 		case "Numpad5": TriageRank := 5
-		default: TriageRank := Integer(Config.DefaultTriageRank) ; 0 if disabled
+		default: TriageRank := Integer(AutoTriageConfig.DefaultTriageRank) ; 0 if disabled
 	}
 	if TriageRank {
 		SendEvent "^a" ; Select all
@@ -108,7 +108,7 @@ Numpad5::
 		db.Close()
 		if (result.count) {
 			FillOutExam(result[1,"body_part"], result[1,"code"])
-		} else if (Config.EnableStudySelector) {
+		} else if (AutoTriageConfig.EnableStudySelector) {
 			MySelectStudyGui.Launch(r.modalityId, r.exam)
 		}
 	}

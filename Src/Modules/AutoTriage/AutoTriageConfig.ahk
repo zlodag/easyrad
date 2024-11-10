@@ -1,6 +1,6 @@
 #Requires AutoHotkey v2.0
 
-class Config {
+class AutoTriageConfig {
 
     static __New() {
         DirCreate this.IniPath
