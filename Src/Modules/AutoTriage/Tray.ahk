@@ -18,7 +18,7 @@ class AutoTriageTrayMenu {
         this.UpdateDefaultTriageRankMenu(Config.DefaultTriageRank || this.TriageRankDisabledMenuName, DefaultTriageRankMenu)
         parentMenu.Add(this.StudySelectorMenuName, ToggleEnableStudySelector)
         this.SetChecked(parentMenu, this.StudySelectorMenuName, Config.EnableStudySelector)
-        parentMenu.Add(this.ForgetAliasMenuName, ForgetAlias)
+        parentMenu.Add(this.ForgetAliasMenuName, MyForgetGui.Launch)
 
         DefaultTriageRankMenuCallback(MenuItemSelected, ItemPos, myMenu) {
             Config.DefaultTriageRank := this.TriageRankDisabledMenuName == MenuItemSelected ? 0 : MenuItemSelected

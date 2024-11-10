@@ -150,7 +150,7 @@ class ForgetGui extends Gui {
         this.ForgetBtn.Enabled := count > 0
     }
 
-    Launch(){
+    Launch(*){
         this.FilterText.Value := ""
         db := Database(false)
         for alias in db.GetAliases() {
