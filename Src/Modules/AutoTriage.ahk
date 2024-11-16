@@ -1,14 +1,22 @@
 #Requires AutoHotkey v2.0
-#Include ../../Lib/_JXON.ahk
-#Include Gui.ahk
-#Include Database.ahk
-#Include Request.ahk
-#Include AutoTriageConfig.ahk
+#Include ../Lib/Config.ahk
+#Include ../Lib/_JXON.ahk
+#Include AutoTriage/Gui.ahk
+#Include AutoTriage/Database.ahk
+#Include AutoTriage/Request.ahk
+#Include ../Common.ahk
+; #Include AutoTriage/AutoTriageConfig.ahk
 
 SetTitleMatchMode 1
 
 MyForgetGui := ForgetGui()
 MySelectStudyGui := SelectStudyGui()
+
+^+f::
+ForgetAliases(*)
+{
+	MyForgetGui.Launch()
+}
 
 #HotIf WinActive("COMRAD Medical Systems Ltd. ahk_class SunAwtFrame")
 MButton::
@@ -94,7 +102,7 @@ Numpad5::
 		case "Numpad3": TriageRank := 3
 		case "Numpad4": TriageRank := 4
 		case "Numpad5": TriageRank := 5
-		default: TriageRank := Integer(AutoTriageConfig.DefaultTriageRank) ; 0 if disabled
+		default: TriageRank := Integer(Config.AutoTriage["DefaultTriageRank"]) ; 0 if disabled
 	}
 	if TriageRank {
 		SendEvent "^a" ; Select all
@@ -108,7 +116,7 @@ Numpad5::
 		db.Close()
 		if (result.count) {
 			FillOutExam(result[1,"body_part"], result[1,"code"])
-		} else if (AutoTriageConfig.EnableStudySelector) {
+		} else if (Config.AutoTriage["UseStudySelector"]) {
 			MySelectStudyGui.Launch(r.modalityId, r.exam)
 		}
 	}

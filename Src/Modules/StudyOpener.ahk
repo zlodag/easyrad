@@ -4,13 +4,13 @@ class StudyOpener {
     ;; login to all COMS
     ;; save COMS to object
 
-    __New(config) {
+    __New() {
         ;; Save all Inteleviewer COM objects
         this.IV_COM_objs := Map()
 
-        for key, value in Config.IV
-            if value["Url"] value["Username"] and value["PW"]
-                this.IV_COM_objs[key] := InteleviewerCOM(value["Url"], value["Username"], value["PW"])
+        for site, x in Config.InteleViewer.Sites
+            if url := Config.IV[site " URL"] and username := Config.IV[site " Username"] and password := Config.IV[site " Password"] 
+                this.IV_COM_objs[site] := InteleviewerCOM(url, username, password)
     }
 
     searchPatient(id) {
