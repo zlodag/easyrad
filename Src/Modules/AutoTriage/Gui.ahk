@@ -109,7 +109,6 @@ class ForgetGui extends Gui {
         this.FilterText := this.AddEdit("ys")
         this.FilterText.OnEvent("Change", OnSearchChange)
         this.ListView := this.AddListView("xs w500 r20", ["Alias", "Code", "Description"])
-        ; ListView.ModifyCol()
         this.ListView.OnEvent("ItemSelect", OnItemSelect)
         this.ForgetBtn := this.AddButton("Default w80")
         this.ForgetBtn.OnEvent("Click", OnForgetButtonClick)
@@ -121,7 +120,6 @@ class ForgetGui extends Gui {
         OnForgetButtonClick(ctrlObj, *) {
             this.Hide()
             aliases := Array()
-            query := "DELETE FROM label WHERE name IN ("
             RowNumber := 0  ; This causes the first loop iteration to start the search at the top of the list.
             While RowNumber := this.ListView.GetNext(RowNumber) {  ; Resume the search at the row after that found by the previous iteration.
                 aliases.Push(this.ListView.GetText(RowNumber))
@@ -152,11 +150,15 @@ class ForgetGui extends Gui {
 
     Launch(*){
         this.FilterText.Value := ""
+        this.ListView.Opt("-Redraw")
+        this.ListView.Delete()
         db := Database(false)
         for alias in db.GetAliases() {
             this.ListView.Add(, alias.name, alias.code, alias.canonical)
         }
         db.Close()
+        this.ListView.ModifyCol()
+        this.ListView.Opt("+Redraw")
         this.UpdateForgetButton(0)
         this.Show()
         this.FilterText.Focus()
