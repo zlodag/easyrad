@@ -1,6 +1,17 @@
+;@Ahk2Exe-SetVersion 0.0.6
 #Requires AutoHotkey v2.0
-#Include AutoTriageConfig.ahk
-#Include AutoTriage.ahk
+#SingleInstance Force
+#Include Modules/AutoTriage.ahk
+
+A_TrayMenu.Delete
+AutoTriageTrayMenu.AddToMenu(A_TrayMenu)
+A_TrayMenu.Add
+A_TrayMenu.AddStandard()
+
+^+f::
+{
+	MyForgetGui.Launch()
+}
 
 class AutoTriageTrayMenu {
 
@@ -28,7 +39,6 @@ class AutoTriageTrayMenu {
         ToggleEnableStudySelector(ItemName, ItemPos, menu) {
             this.SetChecked(menu, this.StudySelectorMenuName, AutoTriageConfig.EnableStudySelector := !AutoTriageConfig.EnableStudySelector)
         }
-
     }
 
     static UpdateDefaultTriageRankMenu(MenuItemSelected, menu) {
@@ -43,4 +53,35 @@ class AutoTriageTrayMenu {
         else
             menu.Uncheck(itemName)
     }
+}
+
+class AutoTriageConfig {
+
+    static __New() {
+        DirCreate this.IniPath
+    }
+
+    static IniPath := A_AppData "\AutoTriage"
+    static IniFilename := this.IniPath "\Settings.ini"
+
+    static IniSettingsSectionName := "Settings"
+    static IniKeySettingEnableStudySelector := "EnableStudySelector"
+    static DefaultEnableStudySelector := 1
+
+    static IniDefaultsSectionName := "Defaults"
+    static IniKeyDefaultTriageRank := "TriageRank"
+    static DefaultDefaultTriageRank := 3
+
+    ; static ClickLocation := {x: 16, y: 114}
+
+    static EnableStudySelector {
+        get => IniRead(this.IniFilename, this.IniSettingsSectionName, this.IniKeySettingEnableStudySelector, this.DefaultEnableStudySelector)
+        set => IniWrite(value, this.IniFilename, this.IniSettingsSectionName, this.IniKeySettingEnableStudySelector)
+    }
+
+    static DefaultTriageRank {
+        get => IniRead(this.IniFilename, this.IniDefaultsSectionName, this.IniKeyDefaultTriageRank, this.DefaultDefaultTriageRank)
+        set => IniWrite(value, this.IniFilename, this.IniDefaultsSectionName, this.IniKeyDefaultTriageRank)
+    }
+
 }
