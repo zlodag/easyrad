@@ -1,7 +1,7 @@
-;@Ahk2Exe-SetVersion 0.0.6
+;@Ahk2Exe-SetVersion 0.0.7
+;@Ahk2Exe-SetMainIcon ..\Static\icon.ico
 #Requires AutoHotkey v2.0
 #SingleInstance Force
-
 #Include Common.ahk
 #Include Modules\Emacs.ahk
 #Include Modules\Keyboard.ahk
@@ -20,8 +20,9 @@ class MainGui extends Gui {
 
     __New() {
         ;; Set the icon for the tray and task bar
+        ;@Ahk2Exe-IgnoreBegin
         TraySetIcon("..\Static\icon.ico")
-
+        ;@Ahk2Exe-IgnoreEnd
         super.__new(, "EasyRad", this) ;; set the event sink to this object
 
         ;; Override the close button event, to minimize window
