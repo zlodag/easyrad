@@ -65,35 +65,35 @@ class MainGui extends Gui {
         this.Add("GroupBox", "w475 h480 Section xs", "Inteleviewer Settings")
         this.Add("Text", "wp-20 xp+10 yp20 Center", "Christchurch Hospital").SetFont("s8 bold underline")
         this.Add("Text", fieldOpts " yp20", "Server URL:")
-        this.Add("Edit", editOpts " w300 vIVCDHBURLEdit", Config.IV["CDHB URL"])
+        this.Add("Edit", editOpts " w300 vIVCDHBURLEdit", Config.InteleViewer["CDHB URL"])
         this.Add("Text", fieldOpts, "Username:")
-        this.Add("Edit", editOpts " vIVCDHBUsernameEdit", Config.IV["CDHB Username"])
+        this.Add("Edit", editOpts " vIVCDHBUsernameEdit", Config.InteleViewer["CDHB Username"])
         this.Add("Text", fieldOpts, "Password:")
-        this.Add("Edit", editOpts " Password vIVCDHBPWEdit", Config.IV["CDHB Password"])
+        this.Add("Edit", editOpts " Password vIVCDHBPWEdit", Config.InteleViewer["CDHB Password"])
 
         this.Add("Text", "wp-20 xp+10 yp40 Center", "Pacific Radiology Group (PRG)").SetFont("s8 bold")
         this.Add("Text", fieldOpts " yp20", "Server URL:")
-        this.Add("Edit", editOpts " w300 vIVPRGURLEdit", Config.IV["PRG URL"])
+        this.Add("Edit", editOpts " w300 vIVPRGURLEdit", Config.InteleViewer["PRG URL"])
         this.Add("Text", fieldOpts, "Username:")
-        this.Add("Edit", editOpts " vIVPRGUsernameEdit", Config.IV["PRG Username"])
+        this.Add("Edit", editOpts " vIVPRGUsernameEdit", Config.InteleViewer["PRG Username"])
         this.Add("Text", fieldOpts, "Password:")
-        this.Add("Edit", editOpts " Password vIVPRGPWEdit", Config.IV["PRG Password"])
+        this.Add("Edit", editOpts " Password vIVPRGPWEdit", Config.InteleViewer["PRG Password"])
 
         this.Add("Text", "wp-20 xp+10 yp40 Center", "Reform Radiology").SetFont("s8 bold")
         this.Add("Text", fieldOpts " yp20", "Server URL:")
-        this.Add("Edit", editOpts " w300 vIVReformURLEdit", Config.IV["Reform URL"])
+        this.Add("Edit", editOpts " w300 vIVReformURLEdit", Config.InteleViewer["Reform URL"])
         this.Add("Text", fieldOpts, "Username:")
-        this.Add("Edit", editOpts " vIVReformUsernameEdit", Config.IV["Reform Username"])
+        this.Add("Edit", editOpts " vIVReformUsernameEdit", Config.InteleViewer["Reform Username"])
         this.Add("Text", fieldOpts, "Password:")
-        this.Add("Edit", editOpts " Password vIVReformPWEdit", Config.IV["Reform Password"])
+        this.Add("Edit", editOpts " Password vIVReformPWEdit", Config.InteleViewer["Reform Password"])
 
         this.Add("Text", "wp-20 xp+10 yp40 Center", "Beyond Radiology").SetFont("s8 bold")
         this.Add("Text", fieldOpts " yp20", "Server URL:")
-        this.Add("Edit", editOpts " w300 vIVBeyondURLEdit", Config.IV["Beyond URL"])
+        this.Add("Edit", editOpts " w300 vIVBeyondURLEdit", Config.InteleViewer["Beyond URL"])
         this.Add("Text", fieldOpts, "Username:")
-        this.Add("Edit", editOpts " vIVBeyondUsernameEdit", Config.IV["Beyond Username"])
+        this.Add("Edit", editOpts " vIVBeyondUsernameEdit", Config.InteleViewer["Beyond Username"])
         this.Add("Text", fieldOpts, "Password:")
-        this.Add("Edit", editOpts " Password vIVBeyondPWEdit", Config.IV["Beyond Password"])
+        this.Add("Edit", editOpts " Password vIVBeyondPWEdit", Config.InteleViewer["Beyond Password"])
 
         this.Add("GroupBox", "w475 Section r5 xs", "AutoTriage Settings")
         this.AddCheckBox(" xs130 yp20 vUseStudySelector", "Use study selector")
@@ -114,7 +114,7 @@ class MainGui extends Gui {
     }
 
     Launch_IV_Btn_Click(*) {
-        InteleviewerApp.login(Config.IV["CDHB Username"], Config.IV["CDHB Password"])
+        InteleviewerApp.login(Config.InteleViewer["CDHB Username"], Config.InteleViewer["CDHB Password"])
     }
 
     Launch_Comrad_Btn_Click(*) {
@@ -137,7 +137,7 @@ class MainGui extends Gui {
         Else
             this['startComradBtn'].Enabled := false
 
-        If Config.IV["CDHB Username"] and Config.IV["CDHB Password"]
+        If Config.InteleViewer["CDHB Username"] and Config.InteleViewer["CDHB Password"]
             this['startIVBtn'].Enabled := true
         Else
             this['startIVBtn'].Enabled := false
@@ -158,21 +158,21 @@ class MainGui extends Gui {
         Config.Comrad["Username"] := this['ComradUsernameEdit'].Value
         Config.Comrad["Password"] := this['ComradPWEdit'].Value
 
-        Config.IV["CDHB URL"] := this['IVCDHBURLEdit'].Value
-        Config.IV["CDHB Username"] := this['IVCDHBUsernameEdit'].Value
-        Config.IV["CDHB Password"] := this['IVCDHBPWEdit'].Value
+        Config.InteleViewer["CDHB URL"] := this['IVCDHBURLEdit'].Value
+        Config.InteleViewer["CDHB Username"] := this['IVCDHBUsernameEdit'].Value
+        Config.InteleViewer["CDHB Password"] := this['IVCDHBPWEdit'].Value
 
-        Config.IV["PRG URL"] := this['IVPRGURLEdit'].Value
-        Config.IV["PRG Username"] := this['IVPRGUsernameEdit'].Value
-        Config.IV["PRG Password"] := this['IVPRGPWEdit'].Value
+        Config.InteleViewer["PRG URL"] := this['IVPRGURLEdit'].Value
+        Config.InteleViewer["PRG Username"] := this['IVPRGUsernameEdit'].Value
+        Config.InteleViewer["PRG Password"] := this['IVPRGPWEdit'].Value
 
-        Config.IV["Reform URL"] := this['IVReformURLEdit'].Value
-        Config.IV["Reform Username"] := this['IVReformUsernameEdit'].Value
-        Config.IV["Reform Password"] := this['IVReformPWEdit'].Value
+        Config.InteleViewer["Reform URL"] := this['IVReformURLEdit'].Value
+        Config.InteleViewer["Reform Username"] := this['IVReformUsernameEdit'].Value
+        Config.InteleViewer["Reform Password"] := this['IVReformPWEdit'].Value
 
-        Config.IV["Beyond URL"] := this['IVBeyondURLEdit'].Value
-        Config.IV["Beyond Username"] := this['IVBeyondUsernameEdit'].Value
-        Config.IV["Beyond Password"] := this['IVBeyondPWEdit'].Value
+        Config.InteleViewer["Beyond URL"] := this['IVBeyondURLEdit'].Value
+        Config.InteleViewer["Beyond Username"] := this['IVBeyondUsernameEdit'].Value
+        Config.InteleViewer["Beyond Password"] := this['IVBeyondPWEdit'].Value
 
         Config.AutoTriage["UseStudySelector"] := this["UseStudySelector"].Value
         Config.AutoTriage["DefaultTriageRank"] := this["DefaultTriageRank"].Value - 1
