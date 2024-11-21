@@ -152,11 +152,11 @@ class ForgetGui extends Gui {
         this.FilterText.Value := ""
         this.ListView.Opt("-Redraw")
         this.ListView.Delete()
-        db := Database(false)
-        for alias in db.GetAliases() {
-            this.ListView.Add(, alias.name, alias.code, alias.canonical)
+        ; db := Database(false)
+        for alias in Database.GetAliases() {
+            this.ListView.Add(, alias[1], alias[2], alias[3])
         }
-        db.Close()
+        ; db.Close()
         this.ListView.ModifyCol()
         this.ListView.Opt("+Redraw")
         this.UpdateForgetButton(0)
