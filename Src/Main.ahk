@@ -60,7 +60,7 @@ class MainGui extends Gui {
         this.Add("Text", fieldOpts " yp20", "Username:")
         this.Add("Edit", editOpts " vComradUsernameEdit Uppercase", Config.Comrad["Username"])
         this.Add("Text", fieldOpts, "Password:")
-        this.Add("Edit", editOpts " Password vComradPWEdit", Config.Comrad["PW"])
+        this.Add("Edit", editOpts " Password vComradPWEdit", Config.Comrad["Password"])
 
         this.Add("GroupBox", "w475 h480 Section xs", "Inteleviewer Settings")
         this.Add("Text", "wp-20 xp+10 yp20 Center", "Christchurch Hospital").SetFont("s8 bold underline")

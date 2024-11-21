@@ -9,7 +9,7 @@ class StudyOpener {
         this.IV_COM_objs := Map()
 
         for site, x in Config.InteleViewer.Sites
-            if url := Config.IV[site " URL"] and username := Config.IV[site " Username"] and password := Config.IV[site " Password"] 
+            if (url := Config.IV[site " URL"]) and (username := Config.IV[site " Username"]) and (password := Config.IV[site " Password"])
                 this.IV_COM_objs[site] := InteleviewerCOM(url, username, password)
     }
 
