@@ -95,13 +95,13 @@ class MainGui extends Gui {
         this.Add("Text", fieldOpts, "Password:")
         this.Add("Edit", editOpts " Password vIVBeyondPWEdit", Config.IV["Beyond Password"])
 
-        this.Add("GroupBox", "w475 Section r4 xs", "AutoTriage Settings")
+        this.Add("GroupBox", "w475 Section r5 xs", "AutoTriage Settings")
         this.AddCheckBox(" xs130 yp20 vUseStudySelector", "Use study selector")
         this["UseStudySelector"].Value := Integer(Config.AutoTriage["UseStudySelector"])
         this.AddText("w" fieldWidth " xs10 yp25 Right", "Default rank:")
         this.AddDropDownList("xp120 yp vDefaultTriageRank", ["Disabled","1","2","3","4","5"])
         this["DefaultTriageRank"].Value := 1 + Integer(Config.AutoTriage["DefaultTriageRank"])
-        this.AddButton("xp yp25", "Forget Aliases").OnEvent("Click", ForgetAliases)
+        this.AddButton("xp yp25 w120", "Forget Aliases").OnEvent("Click", ForgetAliases)
 
         this.Add("Button", "Default w100 xs40 Section", "Save").OnEvent("Click", "SettingsSaveBtn_Click")
         ;; Add a + button to add a group of controls

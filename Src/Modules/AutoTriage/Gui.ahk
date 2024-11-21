@@ -104,13 +104,13 @@ class SelectStudyGui extends Gui {
 class ForgetGui extends Gui {
     
     __New(){
-        super.__New(,"Forget alias")
+        super.__New(,"Forget aliases")
         this.AddText("Section", "Filter:")
         this.FilterText := this.AddEdit("ys")
         this.FilterText.OnEvent("Change", OnSearchChange)
         this.ListView := this.AddListView("xs w500 r20", ["Alias", "Code", "Description"])
         this.ListView.OnEvent("ItemSelect", OnItemSelect)
-        this.ForgetBtn := this.AddButton("Default w80")
+        this.ForgetBtn := this.AddButton("Default w120")
         this.ForgetBtn.OnEvent("Click", OnForgetButtonClick)
 
         OnItemSelect(ctrlObj, item, selected){
@@ -144,7 +144,7 @@ class ForgetGui extends Gui {
     }
 
     UpdateForgetButton(count){
-        this.ForgetBtn.Text := "Forget " count " item" (count = 1 ? "" : "s")
+        this.ForgetBtn.Text := "Forget " count " alias" (count = 1 ? "" : "es")
         this.ForgetBtn.Enabled := count > 0
     }
 
