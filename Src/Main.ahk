@@ -118,7 +118,7 @@ class MainGui extends Gui {
     }
 
     Launch_Comrad_Btn_Click(*) {
-        ComradApp.login(Config.Comrad["Username"], Config.Comrad["PW"])
+        ComradApp.login(Config.Comrad["Username"], Config.Comrad["Password"])
     }
 
     StartAllBtn_Click(*) {
@@ -132,7 +132,7 @@ class MainGui extends Gui {
     }
 
     CheckLaunchButtons() {
-        If Config.Comrad["Username"] and Config.Comrad["PW"]
+        If Config.Comrad["Username"] and Config.Comrad["Password"]
             this['startComradBtn'].Enabled := true
         Else
             this['startComradBtn'].Enabled := false
